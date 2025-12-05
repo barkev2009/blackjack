@@ -1,0 +1,150 @@
+.blackjack-table {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table-surface {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    background: rgba(13, 82, 32, 0.9);
+    border-radius: 8px;
+    border: 2px solid #ffd700;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    /* Для правильной работы flex */
+}
+
+/* Секции дилера и игрока */
+.dealer-section,
+.player-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px;
+    min-height: 0;
+    /* Для правильной работы flex */
+}
+
+.dealer-section h2,
+.player-section h2 {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+/* Рука с картами */
+.hand {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 8px 0;
+    min-height: 100px;
+    align-items: center;
+    overflow-y: hidden;
+}
+
+/* Центральная часть с сообщением */
+.game-center {
+    padding: 5px 0;
+    margin: 5px 0;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Адаптивные карты для маленьких экранов */
+@media (max-height: 700px) {
+    .hand {
+        min-height: 80px;
+    }
+
+    .dealer-section h2,
+    .player-section h2 {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-height: 600px) {
+    .hand {
+        min-height: 70px;
+    }
+
+    .game-center {
+        padding: 3px 0;
+        margin: 3px 0;
+        min-height: 40px;
+    }
+}
+
+/* Добавляем в конец файла */
+.balance-section {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.balance-info {
+    display: flex;
+    gap: 20px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.bet-controls {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+    min-width: 60px !important;
+}
+
+.btn-info {
+    background: #17a2b8 !important;
+    color: white !important;
+}
+
+.btn-purple {
+    background: #6f42c1 !important;
+    color: white !important;
+}
+
+.btn-secondary {
+    background: #6c757d !important;
+    color: white !important;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .balance-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .balance-info {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

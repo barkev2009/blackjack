@@ -1,0 +1,137 @@
+.card {
+    width: 70px;
+    height: 100px;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    transition: transform 0.2s;
+    font-family: 'Arial', sans-serif;
+    flex-shrink: 0;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.card.red {
+    color: #e74c3c;
+}
+
+.card.black {
+    color: #2c3e50;
+}
+
+.card.back {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    justify-content: center;
+    align-items: center;
+}
+
+.card.back .card-corner,
+.card.back .card-center {
+    display: none;
+}
+
+.card.hidden {
+    position: relative;
+    overflow: hidden;
+}
+
+.card.hidden::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #2c3e50, #34495e);
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.card.hidden::after {
+    content: '?';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    z-index: 2;
+}
+
+.card-corner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    line-height: 1;
+    z-index: 2;
+    position: relative;
+}
+
+.card-corner.top-left {
+    align-self: flex-start;
+}
+
+.card-corner.bottom-right {
+    align-self: flex-end;
+    transform: rotate(180deg);
+}
+
+.card-center {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    position: relative;
+}
+
+.card-suit-large {
+    font-size: 28px;
+}
+
+.card-value {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 1px;
+}
+
+.card-suit {
+    font-size: 12px;
+}
+
+/* Адаптивные карты для очень маленьких экранов */
+@media (max-height: 600px) {
+    .card {
+        width: 60px;
+        height: 85px;
+    }
+
+    .card-suit-large {
+        font-size: 24px;
+    }
+
+    .card-value {
+        font-size: 12px;
+    }
+
+    .card-suit {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: 60px;
+        height: 85px;
+    }
+}
