@@ -21,7 +21,3 @@
     left: 0;
     transform: translate(0%, 100%);
 }
-
-.poker-chip:hover {
-    transform: scale(1.05);
-}
