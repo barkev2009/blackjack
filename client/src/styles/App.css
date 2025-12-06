@@ -5,14 +5,9 @@
 }
 
 html,
-body {
-    height: 100%;
-    overflow: hidden;
-    /* Убираем скролл */
-}
-
+body,
 #root {
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
 }
 
@@ -28,13 +23,12 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 10px;
     overflow: hidden;
 }
 
-/* Заголовок компактный */
 .App-header {
     text-align: center;
     padding: 10px 0;
@@ -54,16 +48,15 @@ body {
     opacity: 0.9;
 }
 
-/* Основное содержание занимает всё доступное пространство */
-main {
+.game-container {
     flex: 1;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
 }
 
-/* Подвал компактный */
-footer {
+.footer {
     flex-shrink: 0;
     text-align: center;
     padding: 10px;

@@ -10,11 +10,11 @@ function App() {
         <p>Используйте базовую стратегию для лучших результатов</p>
       </header>
 
-      <main>
+      <main className="game-container">
         <BlackjackTable />
       </main>
 
-      <footer>
+      <footer className="footer">
         <div className="rules">
           <h3>Правила Blackjack:</h3>
           <ul>
@@ -23,8 +23,6 @@ function App() {
             <li>Картинки = 10 очков</li>
             <li>Дилер берет карты до 17</li>
             <li>Blackjack выплачивается 3:2</li>
-            <li>Double: удвоить ставку, взять 1 карту</li>
-            <li>Split: разделить пару на 2 руки</li>
           </ul>
         </div>
       </footer>
