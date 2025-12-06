@@ -1,6 +1,5 @@
 * {
     margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
@@ -17,81 +16,5 @@ body {
     color: white;
     height: 100vh;
     overflow: hidden;
-}
-
-.App {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    max-width: 1400px;
-    margin: 0 auto;
     padding: 10px;
-    overflow: hidden;
-}
-
-.App-header {
-    text-align: center;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    flex-shrink: 0;
-}
-
-.App-header h1 {
-    font-size: 2rem;
-    margin-bottom: 5px;
-    color: #ffd700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.App-header p {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.game-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
-}
-
-.footer {
-    flex-shrink: 0;
-    text-align: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    margin-top: 10px;
-}
-
-.rules {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.rules h3 {
-    color: #ffd700;
-    margin-bottom: 5px;
-    font-size: 1rem;
-}
-
-.rules ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    font-size: 0.85rem;
-}
-
-.rules li {
-    display: flex;
-    align-items: center;
-}
-
-.rules li:before {
-    content: '•';
-    color: #ffd700;
-    margin-right: 5px;
 }
