@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import { getLeftAdjustment, getRandomRotationAngle } from '../utils';
 
 const initialState = {
-    sum: 0,
+    bet: 0,
+    bankroll: 2000,
     chips: []
 };
 
@@ -10,9 +11,9 @@ export const chipsSlice = createSlice({
     name: 'chips',
     initialState,
     reducers: {
-        incrementSum(state, action) {
+        incrementBet(state, action) {
             const LIMIT = 20;
-            state.sum += action.payload.value;
+            state.bet += action.payload.value;
             const newIdx = state.chips.slice(-1)[0]?.order + 1 || 1;
             if (state.chips.length < LIMIT) {
                 state.chips.push({
@@ -33,13 +34,13 @@ export const chipsSlice = createSlice({
                 })
             }
         },
-        clearSum(state, action) {
-            state.sum = 0;
+        clearBet(state, action) {
+            state.bet = 0;
             state.chips = [];
         }
     }
 });
 
 const { reducer } = chipsSlice
-export const { incrementSum, clearSum } = chipsSlice.actions
+export const { incrementBet, clearBet } = chipsSlice.actions
 export default reducer

@@ -1,19 +1,19 @@
 import React, { memo } from 'react'
 import '../styles/Chip.css';
 import ChipGradient from './ChipGradient';
-import { chipColors } from '../const';
+import { chipset } from '../const';
 import { useDispatch } from 'react-redux';
-import { incrementSum } from '../database/chips.reducer';
+import { incrementBet } from '../database/chips.reducer';
 
 const Chip = memo(({ color, value, label, style }) => {
 
     const dispatch = useDispatch()
     const clickHandler = () => {
-        dispatch(incrementSum({ color, value, label, style }));
+        dispatch(incrementBet({ color, value, label, style }));
     }
 
     return (
-        <div onClick={clickHandler} className='poker-chip' style={{ ...style, backgroundColor: chipColors.filter(c => c.chipColor === color)[0].color }}>
+        <div onClick={clickHandler} className='poker-chip' style={{ ...style, backgroundColor: chipset.filter(c => c.chipColor === color)[0].color }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="1790 350 1430 1390">
                 <defs>
                     <clipPath id="clip-3">

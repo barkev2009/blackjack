@@ -1,0 +1,5 @@
+.card-hand {
+    position: relative;
+    transition: all .1s;
+    height: 140px
+}

@@ -1,0 +1,12 @@
+.dealer-container {
+    position: relative;
+    height: 200px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.dealer-cards {
+    position: relative;
+    transition: all .1s;
+}

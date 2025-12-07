@@ -6,11 +6,11 @@ import { useSelector } from 'react-redux';
 
 const ChipsContainer = () => {
 
-    const chipSum = useSelector(state => state.chips.sum);
+    const bet = useSelector(state => state.chips.bet);
 
     return (
         <div className='chips-container'>
-            {chipSum > 0 && <ChipSelection />}
+            {bet > 0 && <ChipSelection />}
             <ChipsPanel />
         </div>
     )
