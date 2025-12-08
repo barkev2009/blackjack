@@ -60,9 +60,29 @@ export const createShoe = (deckNumber = 6) => {
     }
     // return shuffleArray(shoe)
     return [
-        // { suit: 'clubs', value: 2, label: '10', count: 1 },
-        // { suit: 'clubs', value: 2, label: '10', count: 1 },
+
+        // У игрока 21, не блэкджек
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 2, label: '2', count: 1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 7, label: '7', count: 0 },
+        // { suit: 'clubs', value: 4, label: '4', count: 1 },
+
+        // У игрока блэкджек 
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 2, label: '2', count: 1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
         // { suit: 'clubs', value: 1, label: 'A', count: -1 },
-        // { suit: 'clubs', value: 10, label: 'A', count: -1 }
+
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 }
+        // { suit: 'clubs', value: 8, label: '8', count: 0 },
+        // { suit: 'diamonds', value: 8, label: '8', count: 0 },
+        // { suit: 'spades', value: 8, label: '8', count: 0 },
+        // { suit: 'hearts', value: 8, label: '8', count: 0 },
+        // { suit: 'clubs', value: 8, label: '8', count: 0 },
+        // { suit: 'diamonds', value: 8, label: '8', count: 0 },
+        // { suit: 'spades', value: 8, label: '8', count: 0 },
+        // { suit: 'hearts', value: 8, label: '8', count: 0 }
     ].concat(shuffleArray(shoe));
 }

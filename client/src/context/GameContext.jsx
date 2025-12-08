@@ -6,47 +6,46 @@ const GameContext = createContext();
 export const useGameContext = () => {
     const context = useContext(GameContext);
     if (!context) {
-        throw new Error('useGame must be used within GameProvider');
+        throw new Error('useGameContext must be used within GameProvider');
     }
     return context;
 };
 
 export const GameProvider = ({ children }) => {
-    const [shoe, setShoe] = useState(createShoe());
-    const [dealerHand, setDealerHand] = useState([]);
-    const [playerHand, setPlayerHand] = useState([]);
-    const [dealerScore, setDealerScore] = useState([0, 0]); // [ACE = 1, ACE = 11]
-    const [playerScore, setPlayerScore] = useState([0, 0]); // [ACE = 1, ACE = 11]
-    const [dealerScoreFormatted, setDealerScoreFormatted] = useState('');
-    const [playerScoreFormatted, setPlayerScoreFormatted] = useState('');
-    const [runningCount, setRunningCount] = useState(0);
+    function useShoe(obj) { return useState(obj); }
+    function useRunningCount(obj) { return useState(obj); }
+    function usePlayerStates(obj) { return useState(obj); }
+    function useDealerState(obj) { return useState(obj); }
+    function useGamePhase(obj) { return useState(obj); }
 
-    // Эффект для проверки перебора игрока
-    useEffect(() => {
-        if (playerScore[0] >= 21) {
-            // Автоматически показываем карты дилера при переборе
-            const card = dealerHand[1];
-            setDealerHand(prev => [prev[0], { ...prev[1], face: true }]);
-            determineScore(setDealerScore, setDealerScoreFormatted, card);
-        }
-    }, [playerScore]);
+    const [shoe, setShoe] = useShoe(createShoe());
+    const [runningCount, setRunningCount] = useRunningCount(0);
+    const [playerStates, setPlayerStates] = usePlayerStates([{
+        hand: [],
+        score: [0, 0],
+        scoreFormatted: ''
+    }]);
+    const [dealerState, setDealerState] = useDealerState({
+        hand: [],
+        score: [0, 0],
+        scoreFormatted: ''
+    });
+    const [gamePhase, setGamePhase] = useGamePhase('initial'); // 'initial', 'player-turn', 'dealer-turn', 'game-over'
 
-    // НЕ ИСПОЛЬЗОВАТЬ в циклах
     const drawOneCard = () => {
         const card = shoe[0];
         setShoe(prev => [...prev.slice(1)]);
         return card;
     }
 
-    const determineScore = (stateFunction, stateFunctionFormatted, card) => {
-        stateFunction(prev => {
-            // Берем текущие значения
-            let currentAce1 = prev[0];
-            let currentAce11 = prev[1];
+    const determineDealerScore = (card) => {
+        setDealerState(prev => {
+            setRunningCount(prevCount => prevCount + card.count);
 
-            // Добавляем новую карту
+            let currentAce1 = prev.score[0];
+            let currentAce11 = prev.score[1];
+
             if (card.label === 'A') {
-                // Для туза: добавляем 1 к ace1 и 11 к ace11
                 currentAce1 += 1;
                 currentAce11 += 11;
             } else {
@@ -54,117 +53,280 @@ export const GameProvider = ({ children }) => {
                 currentAce11 += card.value;
             }
 
-            // Проверяем, можем ли мы использовать ace11
-            // Если ace11 > 21, пытаемся преобразовать один из тузов из 11 в 1
             if (currentAce11 > 21) {
-                // Разница между ace11 и ace1 показывает, сколько у нас "лишних" 10-ок от тузов
                 const extraTens = (currentAce11 - currentAce1) / 10;
 
                 if (extraTens > 0) {
-                    // Преобразуем один туз из 11 в 1 (вычитаем 10)
                     currentAce11 -= 10;
 
-                    // Если все еще > 21 и есть другие тузы как 11, преобразуем еще
                     if (currentAce11 > 21 && extraTens > 1) {
                         currentAce11 -= 10;
                     }
 
-                    // Если после преобразований все еще > 21, используем ace1
                     if (currentAce11 > 21) {
                         currentAce11 = currentAce1;
                     }
                 } else {
-                    // Нет тузов как 11, просто используем ace1
                     currentAce11 = currentAce1;
                 }
             }
 
-            // Если достигли ровно 21, оба значения должны быть 21
             if (currentAce11 === 21) {
                 currentAce1 = 21;
             }
 
-            // Форматируем для отображения
-            if (currentAce1 === currentAce11) {
-                stateFunctionFormatted(currentAce1.toString());
+            return {
+                ...prev,
+                score: [currentAce1, currentAce11],
+                scoreFormatted: currentAce1 === currentAce11 ? currentAce1.toString() : `${currentAce1} / ${currentAce11}`
+            };
+        });
+    }
+
+    const determineScoreForHand = (handIndex, card) => {
+        setPlayerStates(prevStates => {
+            const prevScores = prevStates.map(state => state.score);
+            const newScores = [...prevScores];
+            const prevScore = newScores[handIndex] || [0, 0];
+
+            setRunningCount(prevCount => prevCount + card.count);
+
+            let currentAce1 = prevScore[0];
+            let currentAce11 = prevScore[1];
+
+            if (card.label === 'A') {
+                currentAce1 += 1;
+                currentAce11 += 11;
             } else {
-                stateFunctionFormatted(`${currentAce1} / ${currentAce11}`);
+                currentAce1 += card.value;
+                currentAce11 += card.value;
             }
 
-            return [currentAce1, currentAce11];
+            if (currentAce11 > 21) {
+                const extraTens = (currentAce11 - currentAce1) / 10;
+
+                if (extraTens > 0) {
+                    currentAce11 -= 10;
+
+                    if (currentAce11 > 21 && extraTens > 1) {
+                        currentAce11 -= 10;
+                    }
+
+                    if (currentAce11 > 21) {
+                        currentAce11 = currentAce1;
+                    }
+                } else {
+                    currentAce11 = currentAce1;
+                }
+            }
+
+            if (currentAce11 === 21) {
+                currentAce1 = 21;
+            }
+
+            newScores[handIndex] = [currentAce1, currentAce11];
+            return prevStates.map((state, idx) => idx !== handIndex ? state : {
+                ...state,
+                score: newScores[handIndex],
+                scoreFormatted: currentAce1 === currentAce11 ? currentAce1.toString() : `${currentAce1} / ${currentAce11}`
+            });
         });
     };
 
-    useEffect(
-        () => {
-            console.log(shoe);
-            const currentShoe = [...shoe];
-
-            setDealerHand(prev => [...prev, currentShoe[0]]);
-            setDealerHand(prev => [...prev, { ...currentShoe[1], face: false }]);
-            determineScore(setDealerScore, setDealerScoreFormatted, currentShoe[0]);
-
-            setPlayerHand(prev => [...prev, currentShoe[2]]);
-            setPlayerHand(prev => [...prev, currentShoe[3]]);
-            determineScore(setPlayerScore, setPlayerScoreFormatted, currentShoe[2]);
-            determineScore(setPlayerScore, setPlayerScoreFormatted, currentShoe[3]);
-
-            setShoe(prev => [...prev.slice(4)]);
-        }, []
-    );
-
-    const hit = () => {
-        const card = drawOneCard();
-        setPlayerHand(prev => [...prev, card]);
-        determineScore(setPlayerScore, setPlayerScoreFormatted, card);
+    const addCardToPlayerHand = (card, handIndex) => {
+        setPlayerStates(prevStates => {
+            return prevStates.map((state, idx) => idx !== handIndex ? state : {
+                ...state,
+                hand: [...state.hand, card]
+            })
+        })
     }
 
-    const doubleDown = () => {
-        hit(); // Берем одну карту
+    const checkForBlackjack = (handIndex) => {
+        setPlayerStates(prevStates => {
+            const state = prevStates[handIndex];
+            const score = state.score;
 
-        // После hit, если игрок не перебрал, запускаем stand
-        // Проверка на перебор произойдет в useEffect выше
-        if (playerScore[0] <= 21) {
-            stand();
+            // Проверяем блэкджек (21 очко И ровно 2 карты в руке)
+            if (state.hand.length === 2 && (score[0] === 21 || score[1] === 21)) {
+                // Устанавливаем фазу дилера для проверки
+                setGamePhase('dealer-turn');
+                // Запускаем stand только если это первая рука игрока
+                if (handIndex === prevStates.length - 1) {
+                    // Открываем вторую карту дилера
+                    setDealerState(prev => {
+                        // Копируем карту чтобы не мутировать оригинал
+                        const secondCard = prev.hand[1] ? { ...prev.hand[1], face: true } : null;
+                        determineDealerScore(secondCard);
+
+                        return {
+                            ...prev,
+                            hand: [prev.hand[0], secondCard || prev.hand[1]]
+                        };
+                    });
+                }
+            }
+            return prevStates;
+        });
+    }
+
+    useEffect(function initializeGame() {
+        console.log(shoe);
+        const currentShoe = [...shoe];
+
+        // Раздаем карты дилеру
+        const dealerHand = [currentShoe[0], { ...currentShoe[1], face: false }];
+        setDealerState(prev => ({ ...prev, hand: dealerHand }));
+        determineDealerScore(currentShoe[0]);
+
+        // Раздаем карты игроку
+        const initialHand = [currentShoe[2], currentShoe[3]];
+        setPlayerStates(prevStates => [{ ...prevStates[0], hand: initialHand }]);
+
+        // Рассчитываем счет для начальной руки
+        determineScoreForHand(0, currentShoe[2]);
+        determineScoreForHand(0, currentShoe[3]);
+
+        setShoe(prev => [...prev.slice(4)]);
+        setGamePhase('player-turn');
+    }, []);
+
+    // Эффект для проверки блэкджека после обновления счета
+    useEffect(function checkBlackjackEffect() {
+        if (gamePhase === 'player-turn') {
+            playerStates.forEach((_, index) => {
+                checkForBlackjack(index);
+            });
         }
+    }, [playerStates, gamePhase]);
+
+    const hit = (handIndex) => {
+        const card = drawOneCard();
+        addCardToPlayerHand(card, handIndex);
+        determineScoreForHand(handIndex, card);
     }
 
-    const stand = () => {
-        // Открываем вторую карту дилера
-        const secondCard = dealerHand[1];
-        // if (dealerScore[1] + secondCard.value === 21) {
-        //     setDealerHand(prev => [prev[0], { ...prev[1], face: true }]);
-        //     setDealerScore([21, 21]);
-        //     setDealerScoreFormatted('21');
-        //     return
-        // }
-        setDealerHand(prev => [prev[0], { ...prev[1], face: true }]);
-        determineScore(setDealerScore, setDealerScoreFormatted, secondCard);
+    const doubleDown = (handIndex) => {
+        const card = drawOneCard();
+        addCardToPlayerHand(card, handIndex);
+        determineScoreForHand(handIndex, card);
 
+        // После doubleDown сразу переходим к следующей руке или дилеру
+        setPlayerStates(prevStates => {
+            if (handIndex === prevStates.length - 1) {
+                // Это последняя рука
+                setTimeout(() => stand(), 0);
+            }
+            return prevStates;
+        });
+    }
+
+    const split = (handIndex) => {
+        const currentHand = playerStates[handIndex].hand;
+
+        if (currentHand.length !== 2) return;
+
+        const [card1, card2] = currentHand;
+        if (card1.value !== card2.value) return;
+
+        const cardForHand1 = shoe[0];
+        const cardForHand2 = shoe[1];
+
+        const newHand1 = [card1, cardForHand1];
+        const newHand2 = [card2, cardForHand2];
+
+        const newPlayerHands = [...playerStates.map(state => state.hand)];
+        const newPlayerScores = [...playerStates.map(state => state.score)];
+        const newPlayerScoresFormatted = [...playerStates.map(state => state.scoreFormatted)];
+
+        newPlayerHands[handIndex] = newHand1;
+        newPlayerHands.splice(handIndex + 1, 0, newHand2);
+
+        newPlayerScores[handIndex] = [0, 0];
+        newPlayerScores.splice(handIndex + 1, 0, [0, 0]);
+
+        newPlayerScoresFormatted[handIndex] = '';
+        newPlayerScoresFormatted.splice(handIndex + 1, 0, '');
+
+        setRunningCount(prev => prev + cardForHand1.count + cardForHand2.count);
+
+        setShoe(prev => [...prev.slice(2)]);
+        setPlayerStates(
+            _ => newPlayerHands.map((hand, idx) => ({
+                hand,
+                score: newPlayerScores[idx],
+                scoreFormatted: newPlayerScoresFormatted[idx]
+            }))
+        )
+
+        determineScoreForHand(handIndex, card1);
+        determineScoreForHand(handIndex, cardForHand1);
+        determineScoreForHand(handIndex + 1, card2);
+        determineScoreForHand(handIndex + 1, cardForHand2);
+    };
+
+    const stand = (handIndex = 0) => {
+        setGamePhase('dealer-turn');
+
+        // Обновляем все руки игрока на hard total
+        setPlayerStates(prevStates =>
+            prevStates.map(state => ({
+                ...state,
+                score: [Math.max(...state.score), Math.max(...state.score)],
+                scoreFormatted: Math.max(...state.score).toString()
+            }))
+        );
+
+        // Открываем вторую карту дилера
+        setDealerState(prev => {
+            // Копируем карту чтобы не мутировать оригинал
+            const secondCard = prev.hand[1] ? { ...prev.hand[1], face: true } : null;
+
+            if (secondCard) {
+                // Обновляем счет для второй карты дилера
+                setTimeout(() => {
+                    determineDealerScore(secondCard);
+                    startDealerTurn();
+                }, 500);
+            } else {
+                startDealerTurn();
+            }
+
+            return {
+                ...prev,
+                hand: [prev.hand[0], secondCard || prev.hand[1]]
+            };
+        });
+    };
+
+    const startDealerTurn = () => {
         const interval = setInterval(() => {
-            // Получаем актуальный счет дилера
-            setDealerScore(prevScore => {
-                // Проверяем soft 17: если туз считается как 11 и сумма 17, дилер должен брать еще
+            setDealerState(prevState => {
+                const prevScore = prevState.score;
                 const isSoft17 = prevScore[1] === 17 && prevScore[0] !== prevScore[1];
 
-                // Останавливаемся если: больше 17 ИЛИ ровно 17 и это не soft 17
+                // Проверяем, должен ли дилер остановиться
                 if (prevScore[0] > 17 || prevScore[1] > 17 ||
                     (prevScore[1] === 17 && !isSoft17)) {
-                    setDealerScore(prev => {
-                        let [ace1, ace11] = [prev[0], prev[1]];
-                        // Если ace11 перебрал, используем ace1 для обоих
-                        ace1 = ace11;
-                        setDealerScoreFormatted(_ => ace1);
-                        return [ace1, ace11];
-                    })
+
+                    // Финализируем счет дилера
+                    const finalScore = prevScore[0] > 21 ? Math.min(...prevScore) : Math.max(...prevScore);
+
                     clearInterval(interval);
-                    return prevScore;
+                    setGamePhase('game-over');
+
+                    return {
+                        ...prevState,
+                        score: [finalScore, finalScore],
+                        scoreFormatted: finalScore.toString()
+                    };
                 }
 
-                // Получаем текущую колоду
+                // Дилер берет карту
                 setShoe(prevShoe => {
                     if (prevShoe.length === 0) {
                         clearInterval(interval);
+                        setGamePhase('game-over');
                         return prevShoe;
                     }
 
@@ -172,38 +334,36 @@ export const GameProvider = ({ children }) => {
                     const newShoe = prevShoe.slice(1);
 
                     // Добавляем карту дилеру
-                    setDealerHand(prevHand => [...prevHand, card]);
-                    // Обновляем счет дилера с учетом НОВОЙ карты
-                    determineScore(setDealerScore, setDealerScoreFormatted, card);
+                    setDealerState(prevDealerState => {
+                        const newHand = [...prevDealerState.hand, card];
+                        return { ...prevDealerState, hand: newHand };
+                    });
 
-                    // Возвращаем обновленную колоду
+                    // Обновляем счет дилера
+                    determineDealerScore(card);
+
                     return newShoe;
                 });
 
-                return prevScore;
+                return prevState;
             });
         }, 1000);
-
-        // Очистка интервала при размонтировании
-        return () => clearInterval(interval);
     };
 
-    // Значение контекста
     const value = {
-        // Состояния
         shoe,
-        dealerHand,
-        playerHand,
-        dealerScore,
-        playerScore,
-        dealerScoreFormatted,
-        playerScoreFormatted,
+        dealerState,
+        playerStates,
+        dealerHand: dealerState.hand,
+        dealerScore: dealerState.score,
+        dealerScoreFormatted: dealerState.scoreFormatted,
         runningCount,
+        gamePhase,
 
-        // Функции
         hit,
         stand,
-        doubleDown
+        doubleDown,
+        split
     };
 
     return (

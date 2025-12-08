@@ -6,13 +6,17 @@ import { useGameContext } from '../context/GameContext'
 
 const GameContainer = () => {
 
-    const { runningCount } = useGameContext();
+    const { runningCount, playerStates } = useGameContext();
 
     return (
         <div className='game-container'>
             <div className="running-count">{runningCount}</div>
             <DealerContainer />
-            <PlayerContainer />
+            <div className="player-containers">
+                {
+                    playerStates.map((playerState, idx) => <PlayerContainer key={`player-cont-${idx}`} playerState={playerState} handIndex={idx} />)
+                }
+            </div>
         </div>
     )
 }

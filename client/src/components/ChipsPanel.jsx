@@ -8,7 +8,7 @@ const ChipsPanel = () => {
     return (
         <div className='chips-panel'>
             <div className="chips-panel-inner">
-                {chipset.map(({ chipColor, value, label }) => <Chip color={chipColor} value={value} label={label} />)}
+                {chipset.map(({ chipColor, value, label }, idx) => <Chip key={`chip-${idx}`} color={chipColor} value={value} label={label} />)}
             </div>
         </div>
     )
