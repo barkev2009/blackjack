@@ -3,3 +3,11 @@
     position: absolute;
     transition: all .1s;
 }
+
+.card-count {
+    z-index: 9;
+    position: absolute;
+    font: bold;
+    color: red;
+    top: 30px;
+}

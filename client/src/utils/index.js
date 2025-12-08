@@ -58,5 +58,11 @@ export const createShoe = (deckNumber = 6) => {
         const deck = createDeck();
         shoe = [...shoe, ...deck];
     }
-    return shuffleArray(shoe)
+    // return shuffleArray(shoe)
+    return [
+        // { suit: 'clubs', value: 2, label: '10', count: 1 },
+        // { suit: 'clubs', value: 2, label: '10', count: 1 },
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 10, label: 'A', count: -1 }
+    ].concat(shuffleArray(shoe));
 }
