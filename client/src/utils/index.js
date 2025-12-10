@@ -1,3 +1,5 @@
+import { GAME_DECISIONS } from "../const";
+
 export const getRandomRotationAngle = () => {
     const arr = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     return arr[Math.floor(Math.random() * arr.length)]
@@ -52,6 +54,110 @@ function shuffleArray(array) {
     return array;
 }
 
+const hardBSAdvice = (dealerLabel, playerScore) => {
+    if (playerScore >= 17) {
+        return GAME_DECISIONS.STAND
+    }
+    if (playerScore >= 13 && playerScore <= 16) {
+        return ['2', '3', '4', '5', '6'].includes(dealerLabel) ? GAME_DECISIONS.STAND : GAME_DECISIONS.HIT
+    }
+    if (playerScore === 12) {
+        return ['4', '5', '6'].includes(dealerLabel) ? GAME_DECISIONS.STAND : GAME_DECISIONS.HIT
+    }
+    if (playerScore === 11) {
+        return GAME_DECISIONS.DOUBLE_DOWN
+    }
+    if (playerScore === 10) {
+        return ['10', 'A'].includes(dealerLabel) ? GAME_DECISIONS.HIT : GAME_DECISIONS.DOUBLE_DOWN
+    }
+    if (playerScore === 9) {
+        return ['3', '4', '5', '6'].includes(dealerLabel) ? GAME_DECISIONS.DOUBLE_DOWN : GAME_DECISIONS.HIT
+    }
+    if (playerScore <= 8) {
+        return GAME_DECISIONS.HIT
+    }
+    return ''
+}
+
+const softBSAdvice = (dealerLabel, playerScore) => {
+    if (playerScore === 9) {
+        return GAME_DECISIONS.STAND
+    }
+    if (playerScore === 8) {
+        return dealerLabel === '6' ? GAME_DECISIONS.DOUBLE_DOWN_S : GAME_DECISIONS.STAND
+    }
+    if (playerScore === 7) {
+        if (['2', '3', '4', '5', '6'].includes(dealerLabel)) {
+            return GAME_DECISIONS.DOUBLE_DOWN_S
+        } else if (['7', '8'].includes(dealerLabel)) {
+            return GAME_DECISIONS.STAND
+        } else {
+            return GAME_DECISIONS.HIT
+        }
+    }
+    if (playerScore === 6) {
+        return ['3', '4', '5', '6'].includes(dealerLabel) ? GAME_DECISIONS.DOUBLE_DOWN : GAME_DECISIONS.HIT
+    }
+    if (playerScore === 5 || playerScore === 4) {
+        return ['4', '5', '6'].includes(dealerLabel) ? GAME_DECISIONS.DOUBLE_DOWN : GAME_DECISIONS.HIT
+    }
+    if (playerScore === 3 || playerScore === 2) {
+        return ['5', '6'].includes(dealerLabel) ? GAME_DECISIONS.DOUBLE_DOWN : GAME_DECISIONS.HIT
+    }
+    return ''
+}
+
+const splitBSAdvice = (das, dealerLabel, playerLabel, playerScore) => {
+    if (['8', 'A'].includes(playerLabel)) {
+        return GAME_DECISIONS.SPLIT
+    }
+    if (['10', 'J', 'Q', 'K'].includes(playerLabel)) {
+        return hardBSAdvice(dealerLabel, playerScore)
+    }
+    if (playerLabel === '9') {
+        return ['7', 'A', '10', 'J', 'Q', 'K'].includes(dealerLabel) ? hardBSAdvice(dealerLabel, playerScore) : GAME_DECISIONS.SPLIT
+    }
+    if (playerLabel === '7') {
+        return ['8', '9', 'A', '10', 'J', 'Q', 'K'].includes(dealerLabel) ? hardBSAdvice(dealerLabel, playerScore) : GAME_DECISIONS.SPLIT
+    }
+    if (playerLabel === '6') {
+        if (['3', '4', '5', '6'].includes(dealerLabel)) {
+            return GAME_DECISIONS.SPLIT
+        } else if (dealerLabel === '2') {
+            return das ? GAME_DECISIONS.SPLIT : hardBSAdvice(dealerLabel, playerScore)
+        } else {
+            return hardBSAdvice(dealerLabel, playerScore)
+        }
+    }
+    if (playerLabel === '5') {
+        return hardBSAdvice(dealerLabel, playerScore);
+    }
+    if (playerLabel === '4') {
+        return ['5', '6'].includes(dealerLabel) ? (das ? GAME_DECISIONS.SPLIT : hardBSAdvice(dealerLabel, playerScore)) : hardBSAdvice(dealerLabel, playerScore);
+    }
+    if (['2', '3'].includes(playerLabel)) {
+        if (['4', '5', '6', '7'].includes(dealerLabel)) {
+            return GAME_DECISIONS.SPLIT
+        } else if (['2', '3'].includes(dealerLabel)) {
+            return das ? GAME_DECISIONS.SPLIT : hardBSAdvice(dealerLabel, playerScore)
+        } else {
+            return hardBSAdvice(dealerLabel, playerScore)
+        }
+    }
+    return ''
+}
+
+export const giveBSAdvice = (dealerLabel, playerHand, playerScores, das) => {
+    if (playerHand.length === 2 && playerHand[0].label === playerHand[1].label) {
+        return splitBSAdvice(das, dealerLabel, playerHand[0].label, playerScores[0])
+    }
+    if (playerScores[0] !== playerScores[1]) {
+        return softBSAdvice(dealerLabel, playerScores[0] - 1)
+    } else {
+        return hardBSAdvice(dealerLabel, playerScores[0])
+    }
+}
+
 export const createShoe = (deckNumber = 6) => {
     let shoe = [];
     for (let i = 0; i < deckNumber; i++) {
@@ -60,6 +166,18 @@ export const createShoe = (deckNumber = 6) => {
     }
     // return shuffleArray(shoe)
     return [
+
+        // У дилера блэкджек
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 7, label: '7', count: 0 },
+
+        // У дилера SOFT 17
+        { suit: 'clubs', value: 6, label: '6', count: 1 },
+        { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        { suit: 'clubs', value: 10, label: '10', count: -1 },
+        { suit: 'clubs', value: 1, label: 'A', count: -1 },
 
         // У игрока 21, не блэкджек
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
@@ -74,8 +192,7 @@ export const createShoe = (deckNumber = 6) => {
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
         // { suit: 'clubs', value: 1, label: 'A', count: -1 },
 
-        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
-        // { suit: 'clubs', value: 10, label: '10', count: -1 }
+        // Множественные сплиты
         // { suit: 'clubs', value: 8, label: '8', count: 0 },
         // { suit: 'diamonds', value: 8, label: '8', count: 0 },
         // { suit: 'spades', value: 8, label: '8', count: 0 },

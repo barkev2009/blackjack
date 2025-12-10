@@ -6,11 +6,10 @@ import { useGameContext } from '../context/GameContext'
 
 const GameContainer = () => {
 
-    const { runningCount, playerStates } = useGameContext();
+    const { playerStates } = useGameContext();
 
     return (
         <div className='game-container'>
-            <div className="running-count">{runningCount}</div>
             <DealerContainer />
             <div className="player-containers">
                 {

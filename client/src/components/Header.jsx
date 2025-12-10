@@ -1,0 +1,18 @@
+import React from 'react'
+import { useGameContext } from '../context/GameContext';
+import '../styles/Header.css'
+
+const Header = () => {
+
+    const { bankroll, runningCount, shoe } = useGameContext();
+
+    return (
+        <header>
+            <div className="bankroll">{`Bankroll: ${bankroll.toLocaleString()}`}</div>
+            <div className="running-count">{`Running count: ${runningCount}`}</div>
+            <div className="true-count">{`True count: ${Math.floor(runningCount / (shoe.length / 52))} (${(runningCount / (shoe.length / 52)).toFixed(2)})`}</div>
+        </header>
+    )
+}
+
+export default Header

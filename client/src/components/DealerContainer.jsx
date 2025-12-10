@@ -5,12 +5,12 @@ import { useGameContext } from '../context/GameContext'
 
 const DealerContainer = () => {
 
-    const { dealerHand, dealerScoreFormatted } = useGameContext();
+    const { dealerState } = useGameContext();
 
     return (
         <div className='dealer-container'>
-            <div className="dealer-score" style={{position: 'absolute', left: '0'}}>{dealerScoreFormatted}</div>
-            <CardHand cards={dealerHand} />
+            <div className="dealer-score" style={{position: 'absolute', left: '0'}}>{dealerState.scoreFormatted}</div>
+            <CardHand cards={dealerState.hand} />
         </div>
     )
 }

@@ -15,17 +15,21 @@ const ChipGradient = ({ color }) => {
         case 'blue':
             return (
                 <radialGradient xmlns="http://www.w3.org/2000/svg" id={id} gradientUnits="userSpaceOnUse" cx="0" cy="0" fx="0" fy="0" r="695.85" gradientTransform="matrix(1, 0, 0, 1, 2500, 1059.2)">
-                    <stop offset="0" stopColor="rgb(5.046082%, 24.591064%, 48.440552%)" stopOpacity="1" />
+                    {/* <stop offset="0" stopColor="rgb(5.046082%, 24.591064%, 48.440552%)" stopOpacity="1" />
                     <stop offset="0.5" stopColor="rgb(3.245544%, 20.53833%, 41.838074%)" stopOpacity="1" />
-                    <stop offset="1" stopColor="rgb(0.392151%, 14.117432%, 31.37207%)" stopOpacity="1" />
+                    <stop offset="1" stopColor="rgb(0.392151%, 14.117432%, 31.37207%)" stopOpacity="1" /> */}
+                    <stop offset="0" stopColor="hsl(234, 74%, 60%)" stopOpacity="1" />
+                    <stop offset="1" stopColor="hsl(234, 74%, 30%)" stopOpacity="1" />
                 </radialGradient>
             )
         case 'red':
             return (
                 <radialGradient xmlns="http://www.w3.org/2000/svg" id={id} gradientUnits="userSpaceOnUse" cx="0" cy="0" fx="0" fy="0" r="695.85" gradientTransform="matrix(1, 0, 0, 1, 4094.31, 2940.8)">
-                    <stop offset="0" stopColor="rgb(98.400879%, 79.89502%, 0.0350952%)" stopOpacity="1" />
+                    {/* <stop offset="0" stopColor="rgb(98.400879%, 79.89502%, 0.0350952%)" stopOpacity="1" />
                     <stop offset="0.5" stopColor="rgb(90.950012%, 53.22876%, 9.249878%)" stopOpacity="1" />
-                    <stop offset="1" stopColor="rgb(83.528137%, 26.66626%, 18.431091%)" stopOpacity="1" />
+                    <stop offset="1" stopColor="rgb(83.528137%, 26.66626%, 18.431091%)" stopOpacity="1" /> */}
+                    <stop offset="0" stopColor="hsl(0, 69%, 60%)" stopOpacity="1" />
+                    <stop offset="1" stopColor="hsl(0, 69%, 45%)" stopOpacity="1" />
                 </radialGradient>
             )
         case 'light-green':
