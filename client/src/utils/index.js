@@ -174,10 +174,16 @@ export const createShoe = (deckNumber = 6) => {
         // { suit: 'clubs', value: 7, label: '7', count: 0 },
 
         // У дилера SOFT 17
-        { suit: 'clubs', value: 6, label: '6', count: 1 },
-        { suit: 'clubs', value: 1, label: 'A', count: -1 },
-        { suit: 'clubs', value: 10, label: '10', count: -1 },
-        { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 6, label: '6', count: 1 },
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        
+        // У игрока SOFT 17
+        // { suit: 'clubs', value: 6, label: '6', count: 1 },
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
+        // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 6, label: '6', count: 1 },
 
         // У игрока 21, не блэкджек
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
@@ -188,8 +194,8 @@ export const createShoe = (deckNumber = 6) => {
 
         // У игрока блэкджек 
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
-        // { suit: 'clubs', value: 2, label: '2', count: 1 },
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
+        // { suit: 'clubs', value: 2, label: '2', count: 1 },
         // { suit: 'clubs', value: 1, label: 'A', count: -1 },
 
         // Множественные сплиты

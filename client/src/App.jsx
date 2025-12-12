@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './styles/App.css';
 import ChipsContainer from './components/ChipsContainer';
 import GameContainer from './components/GameContainer';
 import Header from './components/Header';
-import { useGameContext } from './context/GameContext';
 import { GAME_STATES } from './const';
+import { useDispatch, useSelector } from 'react-redux';
+import { initializeRound } from './database/game.reducer';
 
 function App() {
 
-  const { gamePhase } = useGameContext();
+  const gamePhase = useSelector(state => state.game.phase);
+  const dispatch = useDispatch();
+
+  // useEffect(() => { dispatch(initializeRound()) }, []);
 
   return (
     <div className="App">

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import '../styles/PlayerContainer.css'
 import CardHand from './CardHand'
-import { useGameContext } from '../context/GameContext'
 import { GAME_STATES } from '../const'
+import { useDispatch, useSelector } from 'react-redux'
+import { doubleDown, hit, split, stand } from '../database/game.reducer'
 
-const PlayerContainer = ({ playerState, handIndex }) => {
+const PlayerContainer = ({ playerState, playerIndex }) => {
 
-    const { hit, stand, doubleDown, split, gamePhase } = useGameContext();
+    const dispatch = useDispatch();
+    const gamePhase = useSelector(state => state.game.gamePhase);
+
     const [standDisabled, setStandDisabled] = useState(false);
     const [hitDisabled, setHitDisabled] = useState(false);
     const [doubleDisabled, setDoubleDisabled] = useState(false);
@@ -46,7 +49,7 @@ const PlayerContainer = ({ playerState, handIndex }) => {
         setDoubleDisabled(_ => true);
         setSplitDisabled(_ => true);
         setStratVisibility(_ => false);
-        stand(handIndex);
+        dispatch(stand({ playerIndex }))
     }
 
     const doubleHandler = () => {
@@ -55,24 +58,24 @@ const PlayerContainer = ({ playerState, handIndex }) => {
         setStandDisabled(_ => true);
         setHitDisabled(_ => true);
         setStratVisibility(_ => false);
-        doubleDown(handIndex);
+        dispatch(doubleDown({ playerIndex }))
     }
 
     const hitHandler = () => {
         setDoubleDisabled(_ => true);
         setSplitDisabled(_ => true);
-        hit(handIndex);
+        dispatch(hit({ playerIndex }))
     }
 
     const splitHandler = () => {
-        split(handIndex);
+        dispatch(split({ playerIndex }))
     }
 
     return (
         <div className='player-container'>
             <div className="player-score" style={{ position: 'absolute', left: 0 }}>{playerState.scoreFormatted}</div>
             <CardHand cards={playerState.hand} />
-            <div className="basic-strategy-advice">{stratVisibility ? (playerState.score[1] < 21 ? playerState.basicStrategy: '') : ''}</div>
+            <div className="basic-strategy-advice">{stratVisibility ? (playerState.score[1] < 21 ? playerState.basicStrategy : '') : ''}</div>
             <div className="blackjack-buttons">
                 <button className='stand-button' onClick={standHandler} disabled={standDisabled || playerState.score[0] >= 21}>Stand</button>
                 <button className='split-button' onClick={splitHandler} disabled={splitDisabled}>Split</button>

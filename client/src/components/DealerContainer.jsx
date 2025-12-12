@@ -1,11 +1,11 @@
 import React from 'react'
 import '../styles/DealerContainer.css'
 import CardHand from './CardHand'
-import { useGameContext } from '../context/GameContext'
+import { useSelector } from 'react-redux'
 
 const DealerContainer = () => {
 
-    const { dealerState } = useGameContext();
+    const dealerState = useSelector(state => state.game.dealerState)
 
     return (
         <div className='dealer-container'>

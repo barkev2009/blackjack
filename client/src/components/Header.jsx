@@ -1,10 +1,10 @@
 import React from 'react'
-import { useGameContext } from '../context/GameContext';
 import '../styles/Header.css'
+import { useSelector } from 'react-redux';
 
 const Header = () => {
 
-    const { bankroll, runningCount, shoe } = useGameContext();
+    const { bankroll, runningCount, shoe } = useSelector(state => state.game);
 
     return (
         <header>

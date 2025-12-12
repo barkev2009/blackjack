@@ -3,20 +3,19 @@ import '../styles/ChipSelection.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearBet } from '../database/chips.reducer'
 import ChipsHeap from './ChipsHeap'
-import { useGameContext } from '../context/GameContext'
+import { initializeRound } from '../database/game.reducer'
 
 const ChipSelection = () => {
 
     const bet = useSelector(state => state.chips.bet);
     const dispatch = useDispatch();
-    const { deal } = useGameContext();
 
     const clearHandler = () => {
         dispatch(clearBet())
     }
 
     const dealHandler = () => {
-        deal(bet);
+        dispatch(initializeRound())
     }
 
     return (
