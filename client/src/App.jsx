@@ -5,14 +5,18 @@ import GameContainer from './components/GameContainer';
 import Header from './components/Header';
 import { GAME_STATES } from './const';
 import { useDispatch, useSelector } from 'react-redux';
-import { initializeRound } from './database/game.reducer';
+import { determineGameResult } from './utils';
 
 function App() {
 
   const gamePhase = useSelector(state => state.game.phase);
   const dispatch = useDispatch();
 
-  // useEffect(() => { dispatch(initializeRound()) }, []);
+  useEffect(() => {
+    if (gamePhase === GAME_STATES.GAME_OVER) {
+      // determineGameResult(chipsState, gameState);
+    }
+  }, [gamePhase])
 
   return (
     <div className="App">

@@ -3,13 +3,14 @@ import '../styles/Chip.css';
 import ChipGradient from './ChipGradient';
 import { chipset } from '../const';
 import { useDispatch } from 'react-redux';
-import { incrementBet } from '../database/chips.reducer';
+import { chipsReducers } from '../game/game.chips';
+import { gameSlice } from '../game/game.slice';
 
 const Chip = memo(({ color, value, label, style, isComplex }) => {
 
     const dispatch = useDispatch()
     const clickHandler = () => {
-        dispatch(incrementBet({ color, value, label, style }));
+        dispatch(gameSlice.actions.incrementBet({ color, value, label, style }));
     }
 
     return (

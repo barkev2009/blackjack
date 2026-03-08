@@ -3,28 +3,18 @@ import '../styles/PlayerContainer.css'
 import CardHand from './CardHand'
 import { GAME_STATES } from '../const'
 import { useDispatch, useSelector } from 'react-redux'
-import { doubleDown, hit, split, stand } from '../database/game.reducer'
+import { gameSlice } from '../game/game.slice'
 
 const PlayerContainer = ({ playerState, playerIndex }) => {
 
     const dispatch = useDispatch();
-    const gamePhase = useSelector(state => state.game.gamePhase);
+    const gamePhase = useSelector(state => state.game.phase);
 
     const [standDisabled, setStandDisabled] = useState(false);
     const [hitDisabled, setHitDisabled] = useState(false);
     const [doubleDisabled, setDoubleDisabled] = useState(false);
     const [splitDisabled, setSplitDisabled] = useState(true);
     const [stratVisibility, setStratVisibility] = useState(true);
-
-    useEffect(
-        () => {
-            if (playerState.hand.length === 2 && playerState.hand[0].value === playerState.hand[1].value) {
-                setSplitDisabled(_ => false);
-            } else {
-                setSplitDisabled(_ => true);
-            }
-        }, [playerState.hand]
-    );
 
     useEffect(
         () => {
@@ -37,7 +27,7 @@ const PlayerContainer = ({ playerState, playerIndex }) => {
             if (gamePhase === GAME_STATES.INITIAL_GAME) {
                 setDoubleDisabled(_ => false);
                 setHitDisabled(_ => false);
-                setSplitDisabled(_ => false);
+                setSplitDisabled(_ => !(playerState.hand.length === 2 && playerState.hand[0].value === playerState.hand[1].value));
                 setStandDisabled(_ => false);
             }
         }, [gamePhase]
@@ -49,7 +39,7 @@ const PlayerContainer = ({ playerState, playerIndex }) => {
         setDoubleDisabled(_ => true);
         setSplitDisabled(_ => true);
         setStratVisibility(_ => false);
-        dispatch(stand({ playerIndex }))
+        dispatch(gameSlice.actions.stand({ playerIndex }))
     }
 
     const doubleHandler = () => {
@@ -58,17 +48,17 @@ const PlayerContainer = ({ playerState, playerIndex }) => {
         setStandDisabled(_ => true);
         setHitDisabled(_ => true);
         setStratVisibility(_ => false);
-        dispatch(doubleDown({ playerIndex }))
+        dispatch(gameSlice.actions.doubleDown({ playerIndex }))
     }
 
     const hitHandler = () => {
         setDoubleDisabled(_ => true);
         setSplitDisabled(_ => true);
-        dispatch(hit({ playerIndex }))
+        dispatch(gameSlice.actions.hit({ playerIndex }))
     }
 
     const splitHandler = () => {
-        dispatch(split({ playerIndex }))
+        dispatch(gameSlice.actions.split({ playerIndex }))
     }
 
     return (

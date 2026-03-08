@@ -3,7 +3,7 @@ import '../styles/GameContainer.css'
 import DealerContainer from './DealerContainer'
 import PlayerContainer from './PlayerContainer'
 import { useDispatch, useSelector } from 'react-redux'
-import { dealerTurnAsync } from '../database/game.reducer'
+import { dealerTurnAsync } from '../game/game.thunks'
 
 const GameContainer = () => {
 

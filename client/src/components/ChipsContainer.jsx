@@ -7,7 +7,7 @@ import { GAME_STATES } from '../const';
 
 const ChipsContainer = () => {
 
-    const bet = useSelector(state => state.chips.bet);
+    const bet = useSelector(state => state.game.bet);
     const gamePhase = useSelector(state => state.game.phase);
 
     return (

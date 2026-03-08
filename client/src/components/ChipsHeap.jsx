@@ -5,7 +5,7 @@ import Chip from './Chip';
 
 const ChipsHeap = () => {
 
-    const chips = useSelector(state => state.chips.chips);
+    const chips = useSelector(state => state.game.chips);
 
     return (
         <div className="chip-heap">

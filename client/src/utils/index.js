@@ -158,6 +158,10 @@ export const giveBSAdvice = (dealerLabel, playerHand, playerScores, das) => {
     }
 }
 
+export const determineGameResult = (chipsState, gameState) => {
+
+}
+
 export const createShoe = (deckNumber = 6) => {
     let shoe = [];
     for (let i = 0; i < deckNumber; i++) {
@@ -195,7 +199,7 @@ export const createShoe = (deckNumber = 6) => {
         // У игрока блэкджек 
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
         // { suit: 'clubs', value: 10, label: '10', count: -1 },
-        // { suit: 'clubs', value: 2, label: '2', count: 1 },
+        // { suit: 'clubs', value: 1, label: 'A', count: -1 },
         // { suit: 'clubs', value: 1, label: 'A', count: -1 },
 
         // Множественные сплиты

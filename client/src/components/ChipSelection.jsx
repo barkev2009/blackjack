@@ -1,21 +1,21 @@
 import React from 'react'
 import '../styles/ChipSelection.css'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearBet } from '../database/chips.reducer'
 import ChipsHeap from './ChipsHeap'
-import { initializeRound } from '../database/game.reducer'
+import { gameSlice } from '../game/game.slice'
 
 const ChipSelection = () => {
 
-    const bet = useSelector(state => state.chips.bet);
+    const bet = useSelector(state => state.game.bet);
     const dispatch = useDispatch();
 
     const clearHandler = () => {
-        dispatch(clearBet())
+        dispatch(gameSlice.actions.clearBet())
     }
 
     const dealHandler = () => {
-        dispatch(initializeRound())
+        dispatch(gameSlice.actions.initializeRound())
+        dispatch(gameSlice.actions.initialBankrollDecrement())
     }
 
     return (

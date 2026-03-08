@@ -1,15 +1,17 @@
+import { GAME_STATES } from "../const";
+
 export const drawCardFromShoe = (state, participantState, isHiddenCard = false) => {
     const drawnCard = state.shoe.shift();
     isHiddenCard ? participantState.hand.push({ ...drawnCard, face: false }) : participantState.hand.push(drawnCard);
     return drawnCard;
 };
 
-export const revealDealerCard = (dealerState) => {
+export const revealDealerCard = (dealerState, runningCount) => {
     dealerState.hand = [dealerState.hand[0], { ...dealerState.hand[1], face: true }]
-    updateScore(dealerState)
+    updateScore(dealerState, runningCount)
 }
 
-export const updateScore = (state) => {
+export const updateScore = (state, runningCount) => {
     const card = state.hand.slice(-1)[0];
     state.runningCount += card.count;
 
@@ -42,18 +44,35 @@ export const updateScore = (state) => {
     }
 
     state.score = [ace1, ace11]
+    // state.runningCount = runningCount;
 }
 
 export const checkBlackjack = (state) => {
     if (state.playerStates[0].score[0] === 21) {
-        revealDealerCard(state.dealerState)
+        revealDealerCard(state.dealerState, state.runningCount);
+        if (state.dealerState.score[0] === 21) {
+            state.bankroll += state.bet;
+        } else {
+            state.bankroll += 2.5 * state.bet;
+        }
+        state.phase = GAME_STATES.BETTING;
     }
 }
 
 export const setGamePhase = (state, phase) => {
     state.phase = phase
-} 
+}
 
 export const determineResult = (state) => {
-    
+
 }
+
+export const createPlayerState = (hand, bet) => ({
+    hand,
+    score: hand[0].label === 'A' ? [1, 11] : [hand[0].value, hand[0].value],
+    scoreFormatted: hand[0].label === 'A' ? '1 / 11' : hand[0].value.toString(),
+    bet,
+    basicStrategy: '',
+    isOver: false,
+    isBusted: false
+});
