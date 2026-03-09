@@ -1,5 +1,12 @@
 .card-hand {
     position: relative;
-    transition: all .1s;
-    height: 140px
+    display: flex;
+    align-items: flex-end;
+    height: 120px;
+    justify-content: center;
+}
+
+.card-hand-inner {
+    position: relative;
+    display: flex;
 }

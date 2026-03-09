@@ -1,84 +1,103 @@
-// game.thunks.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { gameSlice } from './game.slice';
 import { GAME_STATES } from '../const';
 
-// Асинхронный thunk для dealerTurn с задержкой
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
 export const dealerTurnAsync = createAsyncThunk(
     'game/dealerTurnAsync',
     async (_, { dispatch, getState }) => {
         try {
-            // Сначала раскрываем закрытую карту
             dispatch(gameSlice.actions.revealDealerCardAction());
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await delay(700);
 
-            // Проверяем, все ли игроки перебрали
-            if (getState().game.playerStates.every(state => state.isBusted)) {
+            const state0 = getState().game;
+            if (state0.playerStates.every(ps => ps.isBusted)) {
                 dispatch(gameSlice.actions.finishDealerTurn());
+                dispatch(gameSlice.actions.setLastResult('loss'));
+                dispatch(gameSlice.actions.setPhase(GAME_STATES.GAME_OVER));
+                await delay(1800);
+                dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
+                await delay(420);
+                dispatch({ type: 'game/clearTable' });
+                dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
                 return;
             }
 
-            // Пока счёт дилера < 17 и он не перебрал
             let currentState = getState().game;
-            while (currentState.dealerState.score[1] < 17 && !currentState.dealerState.isBusted) {
+            while (true) {
+                const ds = currentState.dealerState;
+                const score11 = ds.score[1];
+                const score1 = ds.score[0];
+                const isSoft = score1 !== score11 && score11 <= 21;
+                const best = score11 <= 21 ? score11 : score1;
+
+                if (ds.isBusted) break;
+                if (best > 17) break;
+                if (best === 17 && !isSoft) break;
+                if (best === 17 && isSoft && !currentState.settings.dealerHitsSoft17) break;
+
                 dispatch(gameSlice.actions.drawDealerCard());
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                // Обновляем состояние после каждой итерации
+                await delay(700);
                 currentState = getState().game;
-
-                // Проверяем условия выхода
-                if (currentState.dealerState.score[1] >= 17 || currentState.dealerState.isBusted) {
-                    break;
-                }
             }
 
-            // Завершаем ход дилера
-            // dispatch(gameSlice.actions.finishDealerTurn());
-            dispatch(finishGameWithDelay());
+            dispatch(gameSlice.actions.finishDealerTurn());
 
-            // Возвращаем результат для fulfilled
+            const finalState = getState().game;
+            const dealerBest = finalState.dealerState.score[1] <= 21
+                ? finalState.dealerState.score[1]
+                : finalState.dealerState.score[0];
+            const dealerBusted = finalState.dealerState.isBusted;
+
+            let overallResult = null;
+            finalState.playerStates.forEach((ps, playerIndex) => {
+                if (ps.isBusted) {
+                    dispatch(gameSlice.actions.playerLose({ playerIndex }));
+                    overallResult = overallResult || 'loss';
+                    return;
+                }
+                const pBest = ps.score[1] <= 21 ? ps.score[1] : ps.score[0];
+                if (dealerBusted || pBest > dealerBest) {
+                    dispatch(gameSlice.actions.playerWin({ playerIndex }));
+                    overallResult = 'win';
+                } else if (pBest === dealerBest) {
+                    dispatch(gameSlice.actions.playerPush({ playerIndex }));
+                    overallResult = overallResult || 'push';
+                } else {
+                    dispatch(gameSlice.actions.playerLose({ playerIndex }));
+                    overallResult = overallResult || 'loss';
+                }
+            });
+
+            // lastResult: bust считается как loss для бейджа
+            const lastRes = finalState.playerStates.every(ps => ps.isBusted) ? 'loss'
+                : finalState.playerStates.every(ps => ps.result === 'bust' || ps.result === 'loss') ? 'loss'
+                : overallResult;
+            if (lastRes) dispatch(gameSlice.actions.setLastResult(lastRes));
+
+            dispatch(gameSlice.actions.setPhase(GAME_STATES.GAME_OVER));
+            await delay(1800);
+            dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
+            await delay(420);
+            dispatch({ type: 'game/clearTable' });
+            dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
+
             return { success: true };
-
         } catch (error) {
-            // Возвращаем ошибку для rejected
             console.error(error);
             throw error;
         }
     }
 );
 
-// Новый thunk для задержки перед сменой фазы
-export const finishGameWithDelay = createAsyncThunk(
-    'game/finishGameWithDelay',
+export const resolveBlackjackAsync = createAsyncThunk(
+    'game/resolveBlackjackAsync',
     async (_, { dispatch }) => {
-        // Подсчитываем результаты немедленно
-        dispatch(calculateResults());
-
-        // Ждём 1 секунду
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Меняем фазу
+        await delay(1800);
+        dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
+        await delay(420);
+        dispatch({ type: 'game/clearTable' });
         dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
-    }
-);
-
-// Вспомогательные экшены
-export const calculateResults = createAsyncThunk(
-    'game/calculateResults',
-    async (_, { getState, dispatch }) => {
-        const state = getState().game;
-
-        state.playerStates.forEach((playerState, playerIndex) => {
-            if (playerState.isBusted) return;
-
-            if (playerState.score[1] > state.dealerState.score[1] ||
-                state.dealerState.isBusted) {
-                dispatch(gameSlice.actions.playerWin({ playerIndex })); // Используйте существующий экшен
-            } else if (playerState.score[1] === state.dealerState.score[1]) {
-                dispatch(gameSlice.actions.playerPush({ playerIndex })); // Используйте существующий экшен
-            }
-        });
-        return;
     }
 );

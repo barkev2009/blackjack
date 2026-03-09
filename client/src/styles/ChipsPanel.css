@@ -1,12 +1,1 @@
-.chips-panel {
-    width: 100%;
-    border: 2px dotted black;
-    background-color: rgb(78, 37, 37);
-    display: flex;
-    justify-content: center;
-}
-
-.chips-panel-inner {
-    width: 660px;
-    overflow-x: auto;
-}
+/* legacy */

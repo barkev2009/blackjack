@@ -3,13 +3,13 @@ import '../styles/Chip.css';
 import ChipGradient from './ChipGradient';
 import { chipset } from '../const';
 import { useDispatch } from 'react-redux';
-import { chipsReducers } from '../game/game.chips';
 import { gameSlice } from '../game/game.slice';
 
-const Chip = memo(({ color, value, label, style, isComplex }) => {
+const Chip = memo(({ color, value, label, style, isComplex, clickable = true, disabled = false }) => {
 
     const dispatch = useDispatch()
     const clickHandler = () => {
+        if (!clickable || disabled) return;
         dispatch(gameSlice.actions.incrementBet({ color, value, label, style }));
     }
 

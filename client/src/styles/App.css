@@ -1,20 +1,86 @@
-* {
-    margin: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+    --felt: #1a4a2e;
+    --felt-light: #1f5535;
+    --felt-dark: #122e1e;
+    --gold: #c9a84c;
+    --gold-light: #e8c872;
+    --gold-dark: #9a7535;
+    --text: #f0e8d5;
+    --text-dim: #a09070;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    --panel-bg: rgba(0,0,0,0.35);
+    --panel-border: rgba(201,168,76,0.3);
+    --win: #4caf72;
+    --loss: #e05050;
+    --push: #c9a84c;
+    --radius: 12px;
 }
 
-html,
-body,
-#root {
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
     height: 100%;
-    overflow: hidden;
+    /* убираем overflow:hidden с body — он мешал на iOS */
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #0d3b1e 0%, #1a5f23 100%);
-    color: white;
-    height: 100vh;
-    overflow: hidden;
+    background: var(--felt-dark);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
 }
+
+.App {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(ellipse at center top, var(--felt-light) 0%, var(--felt-dark) 70%);
+    overflow: hidden;
+    /* Safe area для устройств с системными кнопками/вырезами */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+}
+
+.screen-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+button {
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+input[type="range"] { accent-color: var(--gold); }
+input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 16px; height: 16px;
+    cursor: pointer;
+}
+
+select {
+    font-family: 'DM Sans', sans-serif;
+    background: rgba(0,0,0,0.4);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+
+

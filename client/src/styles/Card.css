@@ -1,13 +1,44 @@
-.card {
-    width: 100px;
-    position: absolute;
-    transition: all .1s;
+
+@keyframes cardDeal {
+    from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.card-count {
-    z-index: 9;
+@keyframes cardClear {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(50px) scale(0.85) rotate(4deg); }
+}
+.card {
+    width: 80px;
+    height: 112px;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    display: block;
+    object-fit: cover;
+}
+
+.card-count-badge {
     position: absolute;
-    font: bold;
-    color: red;
-    top: 30px;
+    top: 2px;
+    left: 2px;
+    background: rgba(0,0,0,0.75);
+    color: var(--gold);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+.card-wrap {
+    position: absolute;
+}
+
+.card-dealing {
+    animation: cardDeal 0.3s cubic-bezier(0.25,0.46,0.45,0.94) both;
+}
+
+.card-clearing {
+    animation: cardClear 0.35s ease-in forwards;
 }

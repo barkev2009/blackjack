@@ -1,79 +1,87 @@
-import React, { useEffect, useState } from 'react'
-import '../styles/PlayerContainer.css'
-import CardHand from './CardHand'
-import { GAME_STATES } from '../const'
-import { useDispatch, useSelector } from 'react-redux'
-import { gameSlice } from '../game/game.slice'
+import React, { useState, useEffect } from 'react';
+import '../styles/PlayerContainer.css';
+import CardHand from './CardHand';
+import { GAME_STATES } from '../const';
+import { useDispatch, useSelector } from 'react-redux';
+import { gameSlice } from '../game/game.slice';
+import { giveBSAdvice } from '../utils';
+
+const RESULT_LABELS = {
+    win: '✓ Win',
+    loss: '✗ Lose',
+    push: '= Push',
+    blackjack: '★ Blackjack',
+    bust: '✗ Bust',
+};
 
 const PlayerContainer = ({ playerState, playerIndex }) => {
-
     const dispatch = useDispatch();
-    const gamePhase = useSelector(state => state.game.phase);
+    const { phase, settings, dealerState, showCardValues } = useSelector(state => state.game);
+    const [showBS, setShowBS] = useState(false);
 
-    const [standDisabled, setStandDisabled] = useState(false);
-    const [hitDisabled, setHitDisabled] = useState(false);
-    const [doubleDisabled, setDoubleDisabled] = useState(false);
-    const [splitDisabled, setSplitDisabled] = useState(true);
-    const [stratVisibility, setStratVisibility] = useState(true);
+    const isActive = !playerState.isOver && !playerState.isWaiting && phase === GAME_STATES.INITIAL_GAME;
+    const canDouble = playerState.hand.length === 2 && !playerState.isOver;
+    const canSplit = playerState.hand.length === 2 &&
+        playerState.hand[0]?.label === playerState.hand[1]?.label &&
+        !playerState.isOver;
 
-    useEffect(
-        () => {
-            if (gamePhase === GAME_STATES.GAME_OVER) {
-                setDoubleDisabled(_ => true);
-                setHitDisabled(_ => true);
-                setSplitDisabled(_ => true);
-                setStandDisabled(_ => true);
-            }
-            if (gamePhase === GAME_STATES.INITIAL_GAME) {
-                setDoubleDisabled(_ => false);
-                setHitDisabled(_ => false);
-                setSplitDisabled(_ => !(playerState.hand.length === 2 && playerState.hand[0].value === playerState.hand[1].value));
-                setStandDisabled(_ => false);
-            }
-        }, [gamePhase]
-    );
+    // BS advice
+    const dealerUpLabel = dealerState.hand[0]?.label;
+    const bsAdvice = (dealerUpLabel && playerState.hand.length >= 2 && !playerState.isOver)
+        ? giveBSAdvice(dealerUpLabel, playerState.hand, playerState.score, settings.doubleAfterSplit)
+        : null;
 
-    const standHandler = () => {
-        setStandDisabled(_ => true);
-        setHitDisabled(_ => true);
-        setDoubleDisabled(_ => true);
-        setSplitDisabled(_ => true);
-        setStratVisibility(_ => false);
-        dispatch(gameSlice.actions.stand({ playerIndex }))
-    }
+    const handleStand = () => dispatch(gameSlice.actions.stand({ playerIndex }));
+    const handleHit = () => dispatch(gameSlice.actions.hit({ playerIndex }));
+    const handleDouble = () => dispatch(gameSlice.actions.doubleDown({ playerIndex }));
+    const handleSplit = () => dispatch(gameSlice.actions.split({ playerIndex }));
 
-    const doubleHandler = () => {
-        setDoubleDisabled(_ => true);
-        setSplitDisabled(_ => true);
-        setStandDisabled(_ => true);
-        setHitDisabled(_ => true);
-        setStratVisibility(_ => false);
-        dispatch(gameSlice.actions.doubleDown({ playerIndex }))
-    }
-
-    const hitHandler = () => {
-        setDoubleDisabled(_ => true);
-        setSplitDisabled(_ => true);
-        dispatch(gameSlice.actions.hit({ playerIndex }))
-    }
-
-    const splitHandler = () => {
-        dispatch(gameSlice.actions.split({ playerIndex }))
-    }
+    const resultText = playerState.result ? RESULT_LABELS[playerState.result] : null;
 
     return (
-        <div className='player-container'>
-            <div className="player-score" style={{ position: 'absolute', left: 0 }}>{playerState.scoreFormatted}</div>
-            <CardHand cards={playerState.hand} />
-            <div className="basic-strategy-advice">{stratVisibility ? (playerState.score[1] < 21 ? playerState.basicStrategy : '') : ''}</div>
-            <div className="blackjack-buttons">
-                <button className='stand-button' onClick={standHandler} disabled={standDisabled || playerState.score[0] >= 21}>Stand</button>
-                <button className='split-button' onClick={splitHandler} disabled={splitDisabled}>Split</button>
-                <button className='double-button' onClick={doubleHandler} disabled={doubleDisabled || playerState.score[0] >= 21}>Double down</button>
-                <button className='hit-button' onClick={hitHandler} disabled={hitDisabled || playerState.score[0] >= 21}>Hit</button>
-            </div>
-        </div>
-    )
-}
+        <div className="player-container">
+            <CardHand cards={playerState.hand} showCardValues={showCardValues} />
+            {playerState.isWaiting && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px', fontStyle: 'italic' }}>
+                    Waiting...
+                </div>
+            )}
 
-export default PlayerContainer
+            <div className="player-score">{playerState.scoreFormatted}</div>
+            <div className="player-bet-label">Bet: ${playerState.bet?.toLocaleString()}</div>
+
+
+
+            {isActive && (
+                <>
+                    {/* BS inline advice */}
+                    <div className={`bs-inline ${showBS && bsAdvice ? '' : 'hidden'}`}>
+                        {showBS && bsAdvice ? `→ ${bsAdvice}` : '-'}
+                    </div>
+
+                    <div className="blackjack-buttons">
+                        <button className="stand-button" onClick={handleStand}>Stand</button>
+                        <button className="hit-button" onClick={handleHit}>Hit</button>
+                        <button
+                            className="double-button"
+                            onClick={handleDouble}
+                            disabled={!canDouble}
+                        >Double</button>
+                        <button
+                            className="split-button"
+                            onClick={handleSplit}
+                            disabled={!canSplit}
+                        >Split</button>
+                        <button
+                            className={`bs-btn ${showBS ? 'showing' : ''}`}
+                            onClick={() => setShowBS(v => !v)}
+                            title="Basic Strategy hint"
+                        >BS</button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+export default PlayerContainer;

@@ -1,9 +1,121 @@
 .player-container {
-    position: relative;
-    height: 200px;
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 5px;
+    gap: 10px;
+    position: relative;
 }
+
+.player-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--text);
+    min-height: 1.6rem;
+    text-align: center;
+}
+
+.player-bet-label {
+    font-size: 0.75rem;
+    color: var(--gold);
+}
+
+.result-banner {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 8px;
+    animation: resultPop 0.4s ease;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.result-banner.win { color: var(--win); text-shadow: 0 0 20px rgba(76,175,114,0.6); }
+.result-banner.loss { color: var(--loss); }
+.result-banner.push { color: var(--push); }
+.result-banner.blackjack { color: #7fffaa; text-shadow: 0 0 30px rgba(127,255,170,0.8); }
+.result-banner.bust { color: var(--loss); }
+
+@keyframes resultPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Basic strategy inline advice */
+.bs-inline {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    letter-spacing: 0.5px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.bs-inline.hidden { visibility: hidden; }
+
+/* Action buttons */
+.blackjack-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.blackjack-buttons button {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+}
+
+.stand-button {
+    background: rgba(224,80,80,0.18);
+    color: #e09090;
+    border-color: rgba(224,80,80,0.35) !important;
+}
+.stand-button:hover:not(:disabled) { background: rgba(224,80,80,0.3); }
+
+.hit-button {
+    background: rgba(76,175,114,0.18);
+    color: #90d0a0;
+    border-color: rgba(76,175,114,0.35) !important;
+}
+.hit-button:hover:not(:disabled) { background: rgba(76,175,114,0.3); }
+
+.double-button {
+    background: rgba(201,168,76,0.18);
+    color: var(--gold-light);
+    border-color: rgba(201,168,76,0.35) !important;
+}
+.double-button:hover:not(:disabled) { background: rgba(201,168,76,0.3); }
+
+.split-button {
+    background: rgba(100,130,220,0.18);
+    color: #a0b8e8;
+    border-color: rgba(100,130,220,0.35) !important;
+}
+.split-button:hover:not(:disabled) { background: rgba(100,130,220,0.3); }
+
+.bs-btn {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+.bs-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+.bs-btn.showing { color: var(--gold); border-color: var(--gold-dark); }

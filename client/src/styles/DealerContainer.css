@@ -1,12 +1,21 @@
 .dealer-container {
-    position: relative;
-    height: 200px;
-    width: 100%;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 16px;
 }
 
-.dealer-cards {
-    position: relative;
-    transition: all .1s;
+.dealer-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dealer-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+    min-height: 1.6rem;
 }

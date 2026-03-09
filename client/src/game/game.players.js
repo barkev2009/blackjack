@@ -1,66 +1,111 @@
 import { drawCardFromShoe, updateScore } from "./game.utils";
+import { GAME_STATES } from "../const";
 
-// Логика игроков
 export const playersReducers = {
     hit: (state, action) => {
-        drawCardFromShoe(state, state.playerStates[action.payload.playerIndex]);
-        updateScore(state.playerStates[action.payload.playerIndex], state.runningCount);
-        state.playerStates[action.payload.playerIndex].isBusted =
-            state.playerStates[action.payload.playerIndex].score[0] > 21;
-        state.playerStates[action.payload.playerIndex].isOver =
-            state.playerStates[action.payload.playerIndex].score[0] >= 21;
+        const { playerIndex } = action.payload;
+        drawCardFromShoe(state, state.playerStates[playerIndex]);
+        updateScore(state.playerStates[playerIndex]);
+        if (state.playerStates[playerIndex].score[0] > 21) {
+            state.playerStates[playerIndex].isBusted = true;
+            state.playerStates[playerIndex].isOver = true;
+            state.playerStates[playerIndex].result = 'bust';
+            // Активируем следующую ожидающую руку
+            const next = state.playerStates[playerIndex + 1];
+            if (next && next.isWaiting) next.isWaiting = false;
+        }
     },
 
     stand: (state, action) => {
-        state.playerStates[action.payload.playerIndex].isOver = true;
-        const score = state.playerStates[action.payload.playerIndex].score;
-        state.playerStates[action.payload.playerIndex].score = [Math.max(...score), Math.max(...score)];
-        state.playerStates[action.payload.playerIndex].scoreFormatted = Math.max(...score).toString();
+        const { playerIndex } = action.payload;
+        const ps = state.playerStates[playerIndex];
+        ps.isOver = true;
+        const best = ps.score[1] <= 21 ? ps.score[1] : ps.score[0];
+        ps.score = [best, best];
+        ps.scoreFormatted = best.toString();
+        // Активируем следующую ожидающую руку
+        const next = state.playerStates[playerIndex + 1];
+        if (next && next.isWaiting) next.isWaiting = false;
     },
 
     doubleDown: (state, action) => {
-        state.bankroll -= state.bet;
-        drawCardFromShoe(state, state.playerStates[action.payload.playerIndex]);
-        updateScore(state.playerStates[action.payload.playerIndex], state.runningCount);
-        state.playerStates[action.payload.playerIndex].isBusted =
-            state.playerStates[action.payload.playerIndex].score[0] > 21;
-        state.playerStates[action.payload.playerIndex].isOver = true;
+        const { playerIndex } = action.payload;
+        const ps = state.playerStates[playerIndex];
+        state.bankroll -= ps.bet;
+        ps.bet *= 2;
+        drawCardFromShoe(state, ps);
+        updateScore(ps);
+        ps.isOver = true;
+        if (ps.score[0] > 21) {
+            ps.isBusted = true;
+            ps.result = 'bust';
+        }
+        // Активируем следующую ожидающую руку
+        const nextPs = state.playerStates[action.payload.playerIndex + 1];
+        if (nextPs && nextPs.isWaiting) nextPs.isWaiting = false;
     },
 
     split: (state, action) => {
-        console.log(state.playerStates[action.payload.playerIndex].bet);
-        state.bankroll -= state.playerStates[action.payload.playerIndex].bet;
-        const [card1, card2] = state.playerStates[action.payload.playerIndex].hand;
-        const state1 = {
-            hand: [card1],
-            score: card1.label === 'A' ? [1, 11] : [card1.value, card1.value],
-            scoreFormatted: card1.label === 'A' ? '1 / 11' : card1.value.toString(),
-            bet: state.playerStates[action.payload.playerIndex].bet,
+        const { playerIndex } = action.payload;
+        const ps = state.playerStates[playerIndex];
+        const originalBet = ps.bet;
+        // We need to put up another equal bet for the second hand
+        state.bankroll -= originalBet;
+
+        const [card1, card2] = ps.hand;
+
+        const makeHandState = (card, bet) => ({
+            hand: [{ ...card, face: true }],
+            score: card.label === 'A' ? [1, 11] : [card.value, card.value],
+            scoreFormatted: card.label === 'A' ? '1 / 11' : card.value.toString(),
+            bet,
             basicStrategy: '',
             isOver: false,
-            isBusted: false
-        };
+            isBusted: false,
+            result: null,
+            isSplit: true,
+        });
 
-        const state2 = {
-            hand: [card2],
-            score: card2.label === 'A' ? [1, 11] : [card2.value, card2.value],
-            scoreFormatted: card2.label === 'A' ? '1 / 11' : card2.value.toString(),
-            bet: state.playerStates[action.payload.playerIndex].bet,
-            basicStrategy: '',
-            isOver: false,
-            isBusted: false
-        };
+        const state1 = makeHandState(card1, originalBet);
+        const state2 = makeHandState(card2, originalBet);
 
-        state.playerStates.splice(action.payload.playerIndex, 1, state1, state2);
-        drawCardFromShoe(state, state.playerStates[action.payload.playerIndex]);
-        updateScore(state.playerStates[action.payload.playerIndex], state.runningCount);
-        drawCardFromShoe(state, state.playerStates[action.payload.playerIndex + 1]);
-        updateScore(state.playerStates[action.payload.playerIndex + 1], state.runningCount);
+        state.playerStates.splice(playerIndex, 1, state1, state2);
+
+        // Draw second card for each split hand
+        drawCardFromShoe(state, state.playerStates[playerIndex]);
+        updateScore(state.playerStates[playerIndex]);
+        drawCardFromShoe(state, state.playerStates[playerIndex + 1]);
+        updateScore(state.playerStates[playerIndex + 1]);
+
+        // Split aces: обе руки сразу завершены
+        if (card1.label === 'A') {
+            state.playerStates[playerIndex].isOver = true;
+            state.playerStates[playerIndex + 1].isOver = true;
+        } else {
+            // Вторая рука ждёт пока первая не завершится
+            state.playerStates[playerIndex + 1].isWaiting = true;
+        }
     },
+
+    setPlayerResult: (state, action) => {
+        const { playerIndex, result } = action.payload;
+        state.playerStates[playerIndex].result = result;
+    },
+
     playerWin: (state, action) => {
-        state.bankroll += state.playerStates[action.payload.playerIndex].bet * 2;
+        const { playerIndex } = action.payload;
+        state.bankroll += state.playerStates[playerIndex].bet * 2;
+        state.playerStates[playerIndex].result = 'win';
     },
+
     playerPush: (state, action) => {
-        state.bankroll += state.playerStates[action.payload.playerIndex].bet;
+        const { playerIndex } = action.payload;
+        state.bankroll += state.playerStates[playerIndex].bet;
+        state.playerStates[playerIndex].result = 'push';
+    },
+
+    playerLose: (state, action) => {
+        const { playerIndex } = action.payload;
+        state.playerStates[playerIndex].result = 'loss';
     },
 };

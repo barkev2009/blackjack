@@ -1,18 +1,4 @@
 .chip-heap {
-    display: flex;
-    flex-direction: column-reverse;
-    position: relative;
-    width: 100%;
-}
-
-.chip-heap .poker-chip {
-    cursor: default;
     position: absolute;
-    bottom: 0;
-    left: 25%;
-    transition: none;
-}
-
-.chip-heap .poker-chip:hover {
-    transform: none;
+    inset: 0;
 }
