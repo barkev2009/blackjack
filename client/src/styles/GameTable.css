@@ -1,0 +1,42 @@
+.game-table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.table-felt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(ellipse at center, var(--felt-light) 0%, var(--felt) 60%, var(--felt-dark) 100%);
+    padding: 16px 16px 20px;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.table-felt::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(201,168,76,0.1);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.player-containers {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex: 1;
+    align-items: flex-end;
+    padding-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+    .table-felt { padding: 10px; }
+}

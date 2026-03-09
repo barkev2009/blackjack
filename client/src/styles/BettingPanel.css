@@ -1,0 +1,207 @@
+/* ── Shared ── */
+.last-result-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+.last-result-badge.win       { background: rgba(76,175,114,0.25);  color: var(--win); }
+.last-result-badge.loss      { background: rgba(224,80,80,0.25);   color: var(--loss); }
+.last-result-badge.push      { background: rgba(201,168,76,0.25);  color: var(--push); }
+.last-result-badge.blackjack { background: rgba(76,175,114,0.35);  color: #7fffaa; }
+
+.bidding-advice-bar {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-top: 4px;
+}
+.bidding-advice-strat  { font-size: 0.7rem; color: var(--text-dim); }
+.bidding-advice-amount { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold-light); }
+
+/* ══════════════════════════════════════
+   .betting-panel — внешняя обёртка
+   Она прозрачная, overflow:visible
+   Скрывается через max-height на .bet-panel-body
+   ══════════════════════════════════════ */
+.betting-panel {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* прозрачная обёртка — не клипает башенку */
+    overflow: visible;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.betting-panel--visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Башенка над панелью, в потоке ── */
+/* 20 фишек × 4px шаг + 56px размер чипа = 136px макс */
+.bet-heap-float {
+    position: relative;
+    width: 64px;
+    height: 140px;
+    flex-shrink: 0;
+    /* перекрывает стол снизу — z-index выше стола */
+    z-index: 5;
+}
+
+/* ── Тёмная панель ── */
+.bet-panel-body {
+    width: 100%;
+    background: rgba(8, 22, 14, 0.95);
+    border-top: 2px solid rgba(139,90,20,0.5);
+    /* схлопывается отдельно от башенки */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.betting-panel--visible .bet-panel-body {
+    max-height: 300px;
+}
+
+/* ── bet-center ── */
+.bet-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px 10px;
+}
+
+.bet-amount-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.bet-label-inline {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.bet-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+.bet-amount.zero { color: rgba(255,255,255,0.25); }
+
+.bet-buttons { display: flex; gap: 12px; align-items: center; }
+
+.btn-clear {
+    padding: 9px 26px;
+    border-radius: 8px;
+    background: rgba(180,40,40,0.85);
+    color: #fff;
+    border: 1px solid rgba(255,80,80,0.35);
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: background 0.2s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    white-space: nowrap;
+}
+.btn-clear:hover:not(:disabled) { background: rgba(220,50,50,0.95); }
+
+.btn-deal {
+    padding: 9px 26px;
+    border-radius: 8px;
+    background: rgba(25,120,55,0.9);
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(70,190,90,0.35);
+    transition: background 0.2s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    white-space: nowrap;
+}
+.btn-deal:hover:not(:disabled) { background: rgba(35,150,65,0.95); }
+
+/* ── Трей фишек ── */
+.chips-tray {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 8px 0 12px;
+}
+.chips-tray-inner {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 4px 16px;
+    align-items: center;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    justify-content: center;
+}
+.chips-tray-inner::-webkit-scrollbar { height: 3px; }
+.chips-tray-inner > * { flex-shrink: 0; }
+
+/* ══════════════════════════════════════
+   МОБИЛКА (≤600px)
+   ══════════════════════════════════════ */
+@media (max-width: 600px) {
+    /* Панель — абсолютный оверлей снизу.
+       Башенка (bet-heap-float) выступает над верхним краем bet-panel-body. */
+    .betting-panel {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        z-index: 20;
+    }
+
+    .bet-heap-float {
+        width: 56px;
+        height: 120px;
+    }
+
+    .bet-panel-body {
+        border-radius: 0;
+        width: 100%;
+    }
+
+    .bet-center { padding: 12px 16px 8px; }
+    .bet-amount { font-size: 1.8rem; }
+    .btn-clear, .btn-deal { padding: 10px 24px; font-size: 0.85rem; }
+
+    .chips-tray {
+        padding-bottom: 50px;
+    }
+
+    .chips-tray-inner {
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 4px 12px;
+    }
+    .chips-tray-inner .poker-chip {
+        width: 52px !important;
+        height: 52px !important;
+    }
+    .chips-tray-inner .poker-value {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Компенсируем высоту абсолютной betting panel на мобильном */
+@media (max-width: 600px) {
+    .table-felt {
+        padding-bottom: 180px;
+    }
+}
