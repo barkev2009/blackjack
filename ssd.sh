@@ -1,3 +1,3 @@
 # start_server_dev
 cd server
-npm start
+npm run dev

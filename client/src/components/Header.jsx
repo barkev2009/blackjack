@@ -3,7 +3,7 @@ import '../styles/Header.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { gameSlice } from '../game/game.slice';
 
-const Header = ({ activeScreen, setActiveScreen }) => {
+const Header = ({ activeScreen, setActiveScreen, username, onLogout, isAdmin }) => {
     const { runningCount, shoe, bankroll, showRunningCount, showTrueCount, showShoeDev } = useSelector(state => state.game);
     const dispatch = useDispatch();
 
@@ -38,10 +38,20 @@ const Header = ({ activeScreen, setActiveScreen }) => {
                             color={trueCount > 1 ? '#4caf72' : trueCount < -1 ? '#e05050' : undefined} />
                     )}
                     <StatItem label="Shoe" value={shoe.length} />
-                    <button
-                        className={`header-dev-btn ${showShoeDev ? 'active' : ''}`}
-                        onClick={() => dispatch(gameSlice.actions.toggleShoeDev())}
-                    >🔧 DEV</button>
+                    {username && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginLeft: '4px' }}>
+                            {username}
+                        </span>
+                    )}
+                    <button onClick={onLogout} style={{ fontSize: '0.75rem', color: 'var(--text-dim)', background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer' }}>
+                        Выйти
+                    </button>
+                    {isAdmin && (
+                        <button
+                            className={`header-dev-btn ${showShoeDev ? 'active' : ''}`}
+                            onClick={() => dispatch(gameSlice.actions.toggleShoeDev())}
+                        >🔧 DEV</button>
+                    )}
                 </div>
             </header>
 
@@ -58,10 +68,12 @@ const Header = ({ activeScreen, setActiveScreen }) => {
                             color={trueCount > 1 ? '#4caf72' : trueCount < -1 ? '#e05050' : undefined} />
                     )}
                     <StatItem label="Shoe" value={shoe.length} />
-                    <button
-                        className={`header-dev-btn ${showShoeDev ? 'active' : ''}`}
-                        onClick={() => dispatch(gameSlice.actions.toggleShoeDev())}
-                    >🔧 DEV</button>
+                    {isAdmin && (
+                        <button
+                            className={`header-dev-btn ${showShoeDev ? 'active' : ''}`}
+                            onClick={() => dispatch(gameSlice.actions.toggleShoeDev())}
+                        >🔧 DEV</button>
+                    )}
                 </div>
             )}
         </>

@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/DealerContainer.css';
 import CardHand from './CardHand';
+import ScoreDisplay from './ScoreDisplay';
 import { useSelector } from 'react-redux';
 
 const DealerContainer = () => {
@@ -11,7 +12,7 @@ const DealerContainer = () => {
         <div className="dealer-container">
             <div className="dealer-label">Dealer</div>
             <CardHand cards={dealerState.hand} showCardValues={showCardValues} />
-            <div className="dealer-score">{dealerState.scoreFormatted}</div>
+            <ScoreDisplay scoreFormatted={dealerState.scoreFormatted} cardCount={dealerState.hand.length} className="dealer-score" flipDelay={150} />
         </div>
     );
 };

@@ -4,6 +4,7 @@ import DealerContainer from './DealerContainer';
 import PlayerContainer from './PlayerContainer';
 import BettingPanel from './BettingPanel';
 import ResultToast from './ResultToast';
+import ActionPanel from './ActionPanel';
 import ShoeWidget from './ShoeWidget';
 import { useDispatch, useSelector } from 'react-redux';
 import { dealerTurnAsync, resolveBlackjackAsync } from '../game/game.thunks';
@@ -40,15 +41,19 @@ const GameTable = () => {
             <div className="table-felt" style={{ position: 'relative' }}>
                 <ShoeWidget />
                 <DealerContainer />
-                <div className="player-containers">
-                    {playerStates.map((playerState, idx) => (
-                        <PlayerContainer
-                            key={`player-cont-${idx}`}
-                            playerState={playerState}
-                            playerIndex={idx}
-                        />
-                    ))}
+                <div className="player-scroll-wrap">
+                    <div className="player-containers">
+                        {playerStates.map((playerState, idx) => (
+                            <PlayerContainer
+                                key={`player-cont-${idx}`}
+                                playerState={playerState}
+                                playerIndex={idx}
+                                isSplitLayout={playerStates.length > 1}
+                            />
+                        ))}
+                    </div>
                 </div>
+                <ActionPanel />
                 <ResultToast />
             </div>
             <BettingPanel visible={isBetting} />

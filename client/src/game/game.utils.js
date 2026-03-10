@@ -62,13 +62,11 @@ export const checkBlackjack = (state) => {
 
     // Dealer BJ (без BJ у игрока)
     const dealerUpCard = state.dealerState.hand[0];
-    console.log('[checkBJ] upCard:', dealerUpCard?.label, 'hand length:', state.dealerState.hand.length, 'hand[1]:', state.dealerState.hand[1]?.label, state.dealerState.hand[1]?.value);
     if (['A', '10', 'J', 'Q', 'K'].includes(dealerUpCard.label)) {
         const tempScore = computeHandScore([
             state.dealerState.hand[0],
             { ...state.dealerState.hand[1] },
         ]);
-        console.log('[checkBJ] tempScore:', tempScore, 'max:', Math.max(tempScore[0], tempScore[1]));
         if (Math.max(tempScore[0], tempScore[1]) === 21) {
             revealDealerCard(state);
             state.dealerState.isOver = true;

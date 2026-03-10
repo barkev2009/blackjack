@@ -33,6 +33,13 @@ export function shuffleArray(array) {
 
 export const createShoe = (n = 6) => {
     let shoe = [];
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
+    // shoe.push({'suit':'spades', 'value':10, 'label':'10', 'count':1}); 
     for (let i = 0; i < n; i++) shoe = shoe.concat(createDeck());
     return shuffleArray(shoe);
 }

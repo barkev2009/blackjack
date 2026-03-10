@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "name": "blackjack-server",
+      "script": "index.js",
+      "args": "--https",
+      "env": {
+        "PORT": 5007
+      }
+    }
+  ]
+}

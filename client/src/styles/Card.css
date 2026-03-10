@@ -19,7 +19,7 @@
 
 .card-count-badge {
     position: absolute;
-    top: 2px;
+    top: 30px;
     left: 2px;
     background: rgba(0,0,0,0.75);
     color: var(--gold);
@@ -41,4 +41,22 @@
 
 .card-clearing {
     animation: cardClear 0.35s ease-in forwards;
+}
+
+@keyframes cardFlipOut {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+@keyframes cardFlipIn {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+.card-flip-out {
+    animation: cardFlipOut 0.15s ease-in forwards;
+}
+
+.card-flip-in {
+    animation: cardFlipIn 0.15s ease-out forwards;
 }

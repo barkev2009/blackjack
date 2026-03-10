@@ -31,7 +31,7 @@ const initialState = {
     dealerState: initialDealerState(),
     playerStates: [initialPlayerState()],
     runningCount: 0,
-    shoe: [],
+    shoe: [], // будет заполнена при первом initializeRound
     bankroll: 2000,
     bet: 0,
     chips: [],
@@ -45,6 +45,7 @@ const initialState = {
     fibIndex: 0,
     // Display toggles
     showCardValues: false,
+    showScore: true,
     showRunningCount: true,
     showTrueCount: true,
     // Dev shoe panel
@@ -63,9 +64,9 @@ export const gameSlice = createSlice({
             ps.bet = bet;
             state.playerStates = [ps];
 
-            // Reshuffle check based on settings
-            const cutCard = Math.floor(state.settings.numDecks * 52 * state.settings.penetration);
-            if (state.shoe.length === 0 || state.shoe.length < (state.settings.numDecks * 52 - cutCard)) {
+            // Колода должна быть уже подготовлена при переходе в BETTING
+            // Если вдруг пустая — создаём (fallback)
+            if (state.shoe.length === 0) {
                 state.shoe = createShoe(state.settings.numDecks);
                 state.runningCount = 0;
             }
@@ -87,8 +88,14 @@ export const gameSlice = createSlice({
 
         setPhase: (state, action) => {
             state.phase = action.payload;
-            // При переходе в BETTING автоматически очищаем стол
+            // При переходе в BETTING: reshuffle если прошли cut card, затем очищаем стол
             if (action.payload === GAME_STATES.BETTING) {
+                const cutCard = Math.floor(state.settings.numDecks * 52 * state.settings.penetration);
+                const reshuffleThreshold = state.settings.numDecks * 52 - cutCard;
+                if (state.shoe.length < reshuffleThreshold) {
+                    state.shoe = createShoe(state.settings.numDecks);
+                    state.runningCount = 0;
+                }
                 state.dealerState.hand = [];
                 state.dealerState.score = [0, 0];
                 state.dealerState.scoreFormatted = '';
@@ -126,6 +133,10 @@ export const gameSlice = createSlice({
             state.showCardValues = !state.showCardValues;
         },
 
+        toggleScore: (state) => {
+            state.showScore = !state.showScore;
+        },
+
         toggleRunningCount: (state) => {
             state.showRunningCount = !state.showRunningCount;
         },
@@ -154,6 +165,23 @@ export const gameSlice = createSlice({
                 score: [0, 0],
                 scoreFormatted: '',
             }));
+        },
+
+        // Загрузка состояния с сервера при старте
+        loadServerState: (state, action) => {
+            const { bankroll, state: saved } = action.payload;
+            if (!saved || Object.keys(saved).length === 0) {
+                // Первый запуск — только банкролл
+                state.bankroll = bankroll;
+                return;
+            }
+            // Восстанавливаем все сохранённые поля
+            return {
+                ...initialState,
+                ...saved,
+                bankroll,
+                // Display toggles сохраняем из saved, остальное из initialState по умолчанию
+            };
         },
 
         resetGame: (state) => {

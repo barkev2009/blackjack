@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameSlice } from '../game/game.slice';
+import { apiTelegramLinkCode, apiTelegramStatus, apiTelegramUnlink } from '../services/api';
 import { BLACKJACK_PAYOUTS, BIDDING_STRATEGIES } from '../const';
 import { BIDDING_STRATEGY_LABELS, BIDDING_STRATEGY_DESCRIPTIONS } from '../utils';
 
 const SettingsScreen = () => {
     const dispatch = useDispatch();
-    const { settings, showCardValues, showRunningCount, showTrueCount, biddingStrategy, showBiddingAdvice, baseUnit } = useSelector(state => state.game);
+    const { settings, showCardValues, showScore, showRunningCount, showTrueCount, biddingStrategy, showBiddingAdvice, baseUnit } = useSelector(state => state.game);
 
     const update = (key, value) => dispatch(gameSlice.actions.updateSettings({ [key]: value }));
 
@@ -60,6 +61,9 @@ const SettingsScreen = () => {
                 <Row label="Show Card Hi-Lo Values">
                     <Toggle checked={showCardValues} onChange={() => dispatch(gameSlice.actions.toggleCardValues())} />
                 </Row>
+                <Row label="Show Score">
+                    <Toggle checked={showScore} onChange={() => dispatch(gameSlice.actions.toggleScore())} />
+                </Row>
                 <Row label="Show Running Count">
                     <Toggle checked={showRunningCount} onChange={() => dispatch(gameSlice.actions.toggleRunningCount())} />
                 </Row>
@@ -95,9 +99,83 @@ const SettingsScreen = () => {
                     <Toggle checked={showBiddingAdvice} onChange={v => dispatch(gameSlice.actions.setShowBiddingAdvice(v))} />
                 </Row>
             </Section>
+            {/* Telegram 2FA */}
+            <TelegramSection />
         </div>
     );
 };
+
+const TelegramSection = () => {
+    const [linked, setLinked]   = useState(null); // null=loading
+    const [botUrl, setBotUrl]   = useState('');
+    const [loading, setLoading] = useState(false);
+    const [info, setInfo]       = useState('');
+
+    useEffect(() => {
+        apiTelegramStatus().then(r => setLinked(r.linked)).catch(() => setLinked(false));
+    }, []);
+
+    const handleLink = async () => {
+        setLoading(true); setInfo('');
+        try {
+            const r = await apiTelegramLinkCode();
+            setBotUrl(r.botUrl);
+            // Поллим статус каждые 2 секунды
+            const iv = setInterval(async () => {
+                const s = await apiTelegramStatus().catch(() => ({ linked: false }));
+                if (s.linked) { clearInterval(iv); setLinked(true); setBotUrl(''); setInfo('Telegram успешно привязан! 🎉'); }
+            }, 2000);
+            setTimeout(() => clearInterval(iv), 10 * 60 * 1000); // 10 мин таймаут
+        } catch (e) { setInfo(e.message); }
+        finally { setLoading(false); }
+    };
+
+    const handleUnlink = async () => {
+        setLoading(true);
+        try { await apiTelegramUnlink(); setLinked(false); setInfo('Telegram отвязан'); }
+        catch (e) { setInfo(e.message); }
+        finally { setLoading(false); }
+    };
+
+    return (
+        <Section title="Безопасность">
+            <div style={{ fontSize: '0.88rem', color: 'var(--text)', marginBottom: '4px' }}>
+                Telegram 2FA — коды входа будут приходить в Telegram вместо почты
+            </div>
+            {linked === null && <div style={{ color: 'var(--text-dim)', fontSize: '0.82rem' }}>Загрузка...</div>}
+            {linked === false && !botUrl && (
+                <button onClick={handleLink} disabled={loading} style={tgBtnStyle('#2aabee')}>
+                    {loading ? 'Генерируем...' : '🔗 Привязать Telegram'}
+                </button>
+            )}
+            {botUrl && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-dim)', lineHeight: 1.5 }}>
+                        Нажмите кнопку ниже, откроется Telegram — нажмите Start. После этого страница обновится автоматически.
+                    </div>
+                    <a href={botUrl} target="_blank" rel="noreferrer" style={{ ...tgBtnStyle('#2aabee'), textAlign: 'center', textDecoration: 'none', display: 'block' }}>
+                        📱 Открыть Telegram бота
+                    </a>
+                </div>
+            )}
+            {linked === true && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#4caf72', fontSize: '0.88rem' }}>✓ Telegram привязан</span>
+                    <button onClick={handleUnlink} disabled={loading} style={tgBtnStyle('#e05050', true)}>
+                        Отвязать
+                    </button>
+                </div>
+            )}
+            {info && <div style={{ fontSize: '0.82rem', color: info.includes('ошиб') ? '#e05050' : '#4caf72' }}>{info}</div>}
+        </Section>
+    );
+};
+
+const tgBtnStyle = (color, small = false) => ({
+    background: `${color}22`, color, border: `1px solid ${color}55`,
+    borderRadius: '6px', padding: small ? '4px 10px' : '10px 16px',
+    fontSize: small ? '0.78rem' : '0.88rem', fontWeight: 600, cursor: 'pointer',
+});
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>

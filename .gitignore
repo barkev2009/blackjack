@@ -1,5 +1,7 @@
 client/node_modules
+server/node_modules
 scdr.sh
 ssdr.sh
 *tar.gz
 .env*
+*/config

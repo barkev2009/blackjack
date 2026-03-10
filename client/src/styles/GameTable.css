@@ -4,18 +4,18 @@
     flex-direction: column;
     position: relative;
     min-height: 0;
-    overflow: hidden;
 }
 
 .table-felt {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 8px;
     background: radial-gradient(ellipse at center, var(--felt-light) 0%, var(--felt) 60%, var(--felt-dark) 100%);
-    padding: 16px 16px 20px;
+    padding: 16px 0 12px;
     position: relative;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .table-felt::before {
@@ -25,18 +25,37 @@
     border: 1px solid rgba(201,168,76,0.1);
     border-radius: 4px;
     pointer-events: none;
+    z-index: 0;
 }
 
+.player-scroll-wrap {
+    /* Только горизонтальный скролл, Y не трогаем */
+    overflow-x: auto;
+    overflow-y: unset;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 16px;
+    /* Высота определяется контентом — не режем */
+    flex-shrink: 0;
+}
+.player-scroll-wrap::-webkit-scrollbar { display: none; }
+
 .player-containers {
-    display: flex;
-    gap: 16px;
+    display: inline-flex;
+    gap: 20px;
     justify-content: center;
-    flex-wrap: wrap;
-    flex: 1;
     align-items: flex-end;
-    padding-bottom: 8px;
+    min-width: 100%;
+}
+
+.player-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
 }
 
 @media (max-width: 600px) {
-    .table-felt { padding: 10px; }
+    .table-felt { padding-top: 10px; padding-bottom: 10px; }
 }

@@ -25,7 +25,7 @@ const buildChartData = (runs, numPoints = 200) => {
 
 const SimulationScreen = () => {
     const settings = useSelector(state => state.game.settings);
-    const [numSims, setNumSims] = useState(100);
+    const [numSims, setNumSims] = useState(1000);
     const [numRounds, setNumRounds] = useState(1000);
     const [initialBankroll, setInitialBankroll] = useState(5000);
     const [baseUnit, setBaseUnit] = useState(25);
