@@ -26,7 +26,7 @@
     margin-top: 4px;
 }
 .bidding-advice-strat  { font-size: 0.7rem; color: var(--text-dim); }
-.bidding-advice-amount { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold-light); }
+.bidding-advice-amount { font-family: 'DM Sans', sans-serif; font-size: 1rem; color: var(--gold-light); }
 
 /* ══════════════════════════════════════
    .betting-panel — внешняя обёртка
@@ -38,6 +38,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
     /* прозрачная обёртка — не клипает башенку */
     overflow: visible;
     pointer-events: none;
@@ -65,6 +66,7 @@
     width: 100%;
     background: rgba(8, 22, 14, 0.95);
     border-top: 2px solid rgba(139,90,20,0.5);
+    position: relative;
     /* схлопывается отдельно от башенки */
     max-height: 0;
     overflow: hidden;
@@ -96,7 +98,7 @@
     letter-spacing: 1px;
 }
 .bet-amount {
-    font-family: 'Playfair Display', serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 2rem;
     color: var(--gold);
     line-height: 1;
@@ -181,10 +183,6 @@
     .bet-amount { font-size: 1.8rem; }
     .btn-clear, .btn-deal { padding: 10px 24px; font-size: 0.85rem; }
 
-    .chips-tray {
-        padding-bottom: 50px;
-    }
-
     .chips-tray-inner {
         justify-content: flex-start;
         gap: 8px;
@@ -204,4 +202,61 @@
     .table-felt {
         padding-bottom: 180px;
     }
+}
+
+/* ── Switch Table button ─────────────────────────────────────── */
+.bet-secondary-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.btn-switch-table {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--text-dim, rgba(255,255,255,0.55));
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+    letter-spacing: 0.02em;
+}
+
+.btn-switch-table:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-switch-table:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Switch Table notice ─────────────────────────────────────── */
+.switch-table-notice {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 35, 25, 0.96);
+    border: 1px solid rgba(255, 200, 80, 0.45);
+    color: #f5c842;
+    border-radius: 10px;
+    padding: 9px 20px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: noticeSlideIn 0.25s ease, noticeFadeOut 0.5s ease 3s forwards;
+    z-index: 100;
+}
+
+@keyframes noticeSlideIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes noticeFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
 }

@@ -10,12 +10,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { dealerTurnAsync, resolveBlackjackAsync } from '../game/game.thunks';
 import { GAME_STATES } from '../const';
 
-
 const GameTable = () => {
     const dispatch = useDispatch();
     const playerStates = useSelector(state => state.game.playerStates);
-    const phase = useSelector(state => state.game.phase);
-    const isBetting = phase === GAME_STATES.BETTING;
+    const phase       = useSelector(state => state.game.phase);
+    const bankroll    = useSelector(state => state.game.bankroll);
+    const isBetting   = phase === GAME_STATES.BETTING;
 
     const dealerStartedRef = useRef(false);
 
@@ -23,14 +23,12 @@ const GameTable = () => {
         if (phase === GAME_STATES.BETTING || phase === GAME_STATES.INITIAL_GAME) {
             dealerStartedRef.current = false;
         }
-        // Обычный ход — запускаем дилера (только если нет ожидающих рук)
         const hasWaiting = playerStates.some(ps => ps.isWaiting);
         if (playerStates.length > 0 && playerStates.every(ps => ps.isOver) && !hasWaiting && phase === GAME_STATES.INITIAL_GAME) {
             dealerStartedRef.current = true;
             dispatch(dealerTurnAsync());
             return;
         }
-        // Блэкджек: phase сразу GAME_OVER без прохода через dealerTurnAsync
         if (phase === GAME_STATES.GAME_OVER && !dealerStartedRef.current) {
             dispatch(resolveBlackjackAsync());
         }
@@ -55,6 +53,12 @@ const GameTable = () => {
                 </div>
                 <ActionPanel />
                 <ResultToast />
+
+                {/* Банкролл на столе */}
+                <div className="table-bankroll">
+                    <span className="table-bankroll__label">Bankroll</span>
+                    <span className="table-bankroll__value">${bankroll.toLocaleString()}</span>
+                </div>
             </div>
             <BettingPanel visible={isBetting} />
         </div>

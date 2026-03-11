@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { createShoe } from '../utils';
+import { createShoe, createDeck, shuffleArray } from '../utils';
 import { GAME_STATES, DEFAULT_SETTINGS } from '../const';
 import { checkBlackjack, drawCardFromShoe, setGamePhase, updateScore, revealDealerCard } from './game.utils';
 import { chipsReducers } from './game.chips';
@@ -186,6 +186,46 @@ export const gameSlice = createSlice({
 
         resetGame: (state) => {
             return { ...initialState, settings: state.settings };
+        },
+
+        // Переход на другой стол: новая колода, случайная часть уже "сыграна"
+        switchTable: (state) => {
+            const numDecks = state.settings.numDecks;
+            const totalCards = numDecks * 52;
+
+            // Собираем новую перемешанную колоду
+            let newShoe = [];
+            for (let i = 0; i < numDecks; i++) newShoe = newShoe.concat(createDeck());
+            shuffleArray(newShoe);
+
+            // Случайная глубина проникновения: от 20% до 65% колоды уже сыграно
+            const minPlayed = Math.floor(totalCards * 0.20);
+            const maxPlayed = Math.floor(totalCards * 0.65);
+            const cardsPlayed = minPlayed + Math.floor(Math.random() * (maxPlayed - minPlayed + 1));
+
+            // Извлекаем "сыгранные" карты и считаем по ним RC
+            const playedCards = newShoe.splice(0, cardsPlayed);
+            const newRC = playedCards.reduce((acc, card) => acc + card.count, 0);
+
+            state.shoe = newShoe;
+            state.runningCount = newRC;
+
+            // Сбрасываем стол (как в BETTING)
+            state.dealerState = { hand: [], score: [0, 0], scoreFormatted: '', isOver: false, isBusted: false };
+            state.playerStates = state.playerStates.map(ps => ({
+                ...ps,
+                hand: [],
+                score: [0, 0],
+                scoreFormatted: '',
+                result: null,
+                isOver: false,
+                isBusted: false,
+                bet: 0,
+            }));
+            state.bet = 0;
+            state.chips = [];
+            state.phase = GAME_STATES.BETTING;
+            state.lastResult = null;
         },
 
         ...chipsReducers,

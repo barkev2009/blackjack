@@ -12,7 +12,7 @@ header {
 }
 
 .header-logo {
-    font-family: 'Playfair Display', serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.1rem;
     color: var(--gold);
     letter-spacing: 1px;
@@ -61,6 +61,17 @@ header {
     font-size: 0.88rem;
     font-weight: 600;
     color: var(--text);
+}
+
+.header-stat--bankroll .header-stat-label {
+    font-size: 0.62rem;
+}
+
+.header-stat--bankroll .header-stat-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
 }
 
 .header-dev-btn {
@@ -119,6 +130,12 @@ header {
 
     .mobile-stats-bar .header-stat-value {
         font-size: 0.8rem;
+    }
+
+    .mobile-stats-bar .header-stat--bankroll .header-stat-value {
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
     }
 
     .mobile-stats-bar .header-dev-btn {

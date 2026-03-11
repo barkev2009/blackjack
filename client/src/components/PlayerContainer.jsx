@@ -23,7 +23,6 @@ const PlayerContainer = ({ playerState, playerIndex, isSplitLayout }) => {
         >
             <CardHand cards={playerState.hand} showCardValues={showCardValues} />
             <ScoreDisplay scoreFormatted={playerState.scoreFormatted} cardCount={playerState.hand.length} className="player-score" />
-            <div className="player-bet-label">Bet: ${playerState.bet?.toLocaleString()}</div>
         </div>
     );
 };

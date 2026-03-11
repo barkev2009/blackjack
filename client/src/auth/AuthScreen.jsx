@@ -300,7 +300,7 @@ const Btn = ({ onClick, children, disabled }) => (
 const s = {
     overlay: { position: 'fixed', inset: 0, zIndex: 1000, background: 'radial-gradient(ellipse at center, #1a3a25 0%, #0d1f15 60%, #060e0a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
     card:    { background: 'rgba(8,18,12,0.95)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: '16px', padding: '32px 28px', width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 24px 60px rgba(0,0,0,0.8)' },
-    logo:    { fontFamily: 'Playfair Display, serif', color: '#c9a84c', fontSize: '1.4rem', fontWeight: 700, textAlign: 'center', marginBottom: '4px' },
+    logo:    { fontFamily: "'DM Sans', sans-serif", color: '#c9a84c', fontSize: '1.4rem', fontWeight: 700, textAlign: 'center', marginBottom: '4px' },
     title:   { color: '#e8dcc8', fontSize: '1.1rem', fontWeight: 600, textAlign: 'center', marginBottom: '4px' },
     hint:    { color: '#888', fontSize: '0.85rem', textAlign: 'center' },
     input:   { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '8px', padding: '12px 14px', color: '#e8dcc8', fontSize: '0.95rem', outline: 'none', width: '100%', boxSizing: 'border-box' },

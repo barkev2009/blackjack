@@ -26,7 +26,6 @@ const Header = ({ activeScreen, setActiveScreen, username, onLogout, isAdmin }) 
                     ))}
                 </nav>
 
-                {/* Stats — видны только на десктопе */}
                 <div className="header-stats header-stats--desktop">
                     <StatItem label="Bankroll" value={'$' + bankroll.toLocaleString()} gold />
                     {showRunningCount && (
@@ -55,10 +54,9 @@ const Header = ({ activeScreen, setActiveScreen, username, onLogout, isAdmin }) 
                 </div>
             </header>
 
-            {/* Mobile stats bar — только на game экране */}
+            {/* Mobile stats bar — только счётчики, банкролл теперь на столе */}
             {activeScreen === 'game' && (
                 <div className="mobile-stats-bar">
-                    <StatItem label="Bankroll" value={'$' + bankroll.toLocaleString()} gold />
                     {showRunningCount && (
                         <StatItem label="RC" value={(runningCount > 0 ? '+' : '') + runningCount}
                             color={runningCount > 0 ? '#4caf72' : runningCount < 0 ? '#e05050' : undefined} />
@@ -80,8 +78,8 @@ const Header = ({ activeScreen, setActiveScreen, username, onLogout, isAdmin }) 
     );
 };
 
-const StatItem = ({ label, value, gold, color }) => (
-    <div className="header-stat">
+const StatItem = ({ label, value, gold, color, className }) => (
+    <div className={`header-stat${className ? ' ' + className : ''}`}>
         <span className="header-stat-label">{label}</span>
         <span className="header-stat-value" style={{ color: gold ? 'var(--gold)' : color }}>
             {value}

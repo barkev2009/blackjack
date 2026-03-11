@@ -7,7 +7,7 @@
 }
 
 .player-score {
-    font-family: 'Playfair Display', serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.3rem;
     color: var(--text);
     min-height: 1.6rem;
@@ -20,7 +20,7 @@
 }
 
 .result-banner {
-    font-family: 'Playfair Display', serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     letter-spacing: 2px;

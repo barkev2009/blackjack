@@ -51,7 +51,7 @@ function App() {
         <div style={{
             height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'radial-gradient(ellipse at center, #1a3a25 0%, #0d1f15 100%)',
-            fontFamily: 'Playfair Display, serif', color: '#c9a84c', fontSize: '1.5rem',
+            fontFamily: "'DM Sans', sans-serif", color: '#c9a84c', fontSize: '1.5rem',
         }}>
             ♠ BlackJack Pro
         </div>
@@ -107,7 +107,7 @@ const styles = {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px',
         boxShadow: '0 24px 60px rgba(0,0,0,0.9)', textAlign: 'center',
     },
-    title: { fontFamily: 'Playfair Display, serif', color: '#e05050', fontSize: '2rem', fontWeight: 700 },
+    title: { fontFamily: "'DM Sans', sans-serif", color: '#e05050', fontSize: '2rem', fontWeight: 700 },
     text:  { color: '#c0a88a', fontSize: '0.95rem', lineHeight: 1.6 },
     btn: {
         background: 'linear-gradient(135deg, #8b6914, #c9a84c)',
