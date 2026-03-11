@@ -32,9 +32,9 @@ sequelize.authenticate()
         initBot(); // Запускаем Telegram бота
         if (process.env.NODE_ENV === 'production') {
             const options = {
-                key:  fs.readFileSync('/etc/letsencrypt/live/barkev2009-portfolio.ru/privkey.pem'),
-                cert: fs.readFileSync('/etc/letsencrypt/live/barkev2009-portfolio.ru/cert.pem'),
-                ca:   fs.readFileSync('/etc/letsencrypt/live/barkev2009-portfolio.ru/chain.pem'),
+                key:  fs.readFileSync(process.env.CERT_PATH + '/privkey.pem'),
+                cert: fs.readFileSync(process.env.CERT_PATH + '/cert.pem'),
+                ca:   fs.readFileSync(process.env.CERT_PATH + '/chain.pem'),
             };
             https.createServer(options, app).listen(PORT, () => {
                 console.log(`HTTPS server running on port ${PORT}`);
