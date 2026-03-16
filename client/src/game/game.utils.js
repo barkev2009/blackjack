@@ -48,11 +48,11 @@ export const checkBlackjack = (state) => {
         state.dealerState.isOver = true;
 
         if (isDealerBJ) {
-            state.bankroll += state.playerStates[0].bet;
+            state.bankroll = Math.floor(state.bankroll + state.playerStates[0].bet);
             state.playerStates[0].result = 'push';
             state.lastResult = 'push';           // ← фикс
         } else {
-            state.bankroll += state.playerStates[0].bet * (1 + state.settings.blackjackPayout);
+            state.bankroll = Math.floor(state.bankroll + state.playerStates[0].bet * (1 + state.settings.blackjackPayout));
             state.playerStates[0].result = 'blackjack';
             state.lastResult = 'blackjack';      // ← фикс
         }

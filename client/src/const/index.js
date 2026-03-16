@@ -44,6 +44,7 @@ export const DEFAULT_SETTINGS = {
     blackjackPayout: 1.5,
     doubleAfterSplit: true,
     resplitAces: false,
+    hitAfterAcesSplit: true,
     dealerHitsSoft17: true,
     autoShuffle: false,
     maxSplits: 3,

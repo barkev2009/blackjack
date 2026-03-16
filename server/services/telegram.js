@@ -1,3 +1,4 @@
+const https = require('https');
 const TelegramBot = require('node-telegram-bot-api');
 const { User } = require('../models');
 
@@ -9,13 +10,17 @@ const linkCodes = new Map();
 
 let bot = null;
 
-const initBot = () => {
-    if (!TOKEN) {
-        console.warn('TELEGRAM_BOT_TOKEN не задан — Telegram 2FA отключён');
-        return;
-    }
-
-    bot = new TelegramBot(TOKEN, { polling: true });
+const setupHandlers = () => {
+    bot.on('polling_error', (err) => {
+        if (err.code === 'ETELEGRAM' && err.message.includes('409')) {
+            console.warn('Telegram 409: ждём завершения предыдущего инстанса...');
+            bot.stopPolling().then(() => {
+                setTimeout(() => bot.startPolling(), 3000);
+            });
+        } else {
+            console.error('Telegram polling error:', err.message);
+        }
+    });
 
     // Пользователь пишет /start <code> — привязываем chat_id
     bot.onText(/\/start(?:\s+(\S+))?/, async (msg, match) => {
@@ -63,6 +68,38 @@ const initBot = () => {
     });
 
     console.log('Telegram bot started');
+
+    // Graceful shutdown: останавливаем polling до того как процесс умрёт,
+    // чтобы новый инстанс не получал 409 Conflict
+    const stop = () => {
+        if (bot) {
+            bot.stopPolling().finally(() => process.exit(0));
+            setTimeout(() => process.exit(0), 3000); // fallback
+        } else {
+            process.exit(0);
+        }
+    };
+    process.once('SIGTERM', stop);
+    process.once('SIGINT', stop);
+};
+
+const initBot = () => {
+    if (!TOKEN) {
+        console.warn('TELEGRAM_BOT_TOKEN не задан — Telegram 2FA отключён');
+        return;
+    }
+
+    // Сбрасываем предыдущую сессию на стороне Telegram перед стартом polling.
+    // Без этого Telegram держит старое long-poll соединение до ~10 секунд,
+    // из-за чего новый инстанс получает 409 Conflict.
+    const resetUrl = `https://api.telegram.org/bot${TOKEN}/deleteWebhook?drop_pending_updates=true`;
+    https.get(resetUrl, () => {
+        bot = new TelegramBot(TOKEN, { polling: true });
+        setupHandlers();
+    }).on('error', () => {
+        bot = new TelegramBot(TOKEN, { polling: true });
+        setupHandlers();
+    });
 };
 
 // Генерируем временный код для привязки (6 символов, буквы+цифры)
@@ -84,7 +121,5 @@ const send2FACode = async (chatId, code) => {
         { parse_mode: 'Markdown' }
     );
 };
-
-const getBotUsername = () => bot ? bot.options?.username || null : null;
 
 module.exports = { initBot, generateLinkCode, send2FACode };

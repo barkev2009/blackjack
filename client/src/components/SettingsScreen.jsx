@@ -46,6 +46,9 @@ const SettingsScreen = () => {
                 <Row label="Resplit Aces">
                     <Toggle checked={settings.resplitAces} onChange={v => update('resplitAces', v)} />
                 </Row>
+                <Row label="Hit after aces split">
+                    <Toggle checked={settings.hitAfterAcesSplit} onChange={v => update('hitAfterAcesSplit', v)} />
+                </Row>
                 <Row label="Auto-Shuffle After Each Round">
                     <Toggle checked={settings.autoShuffle} onChange={v => update('autoShuffle', v)} />
                 </Row>

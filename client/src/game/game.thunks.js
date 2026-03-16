@@ -8,21 +8,26 @@ export const dealerTurnAsync = createAsyncThunk(
     'game/dealerTurnAsync',
     async (_, { dispatch, getState }) => {
         try {
-            dispatch(gameSlice.actions.revealDealerCardAction());
-            await delay(700);
-
+            // Сначала проверяем буст — до раскрытия карты дилера
             const state0 = getState().game;
             if (state0.playerStates.every(ps => ps.isBusted)) {
+                // Показываем тост bust, и только потом раскрываем карту дилера
                 dispatch(gameSlice.actions.finishDealerTurn());
                 dispatch(gameSlice.actions.setLastResult('loss'));
+                await delay(500);
                 dispatch(gameSlice.actions.setPhase(GAME_STATES.GAME_OVER));
-                await delay(1800);
+                await delay(600);
+                dispatch(gameSlice.actions.revealDealerCardAction());
+                await delay(1200);
                 dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
                 await delay(420);
                 dispatch({ type: 'game/clearTable' });
                 dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
                 return;
             }
+
+            dispatch(gameSlice.actions.revealDealerCardAction());
+            await delay(700);
 
             let currentState = getState().game;
             while (true) {

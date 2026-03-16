@@ -31,7 +31,7 @@ export const playersReducers = {
     doubleDown: (state, action) => {
         const { playerIndex } = action.payload;
         const ps = state.playerStates[playerIndex];
-        state.bankroll -= ps.bet;
+        state.bankroll = Math.floor(state.bankroll - ps.bet);
         ps.bet *= 2;
         drawCardFromShoe(state, ps);
         updateScore(ps);
@@ -50,7 +50,7 @@ export const playersReducers = {
         const ps = state.playerStates[playerIndex];
         const originalBet = ps.bet;
         // We need to put up another equal bet for the second hand
-        state.bankroll -= originalBet;
+        state.bankroll = Math.floor(state.bankroll - originalBet);
 
         const [card1, card2] = ps.hand;
 
@@ -77,8 +77,8 @@ export const playersReducers = {
         drawCardFromShoe(state, state.playerStates[playerIndex + 1]);
         updateScore(state.playerStates[playerIndex + 1]);
 
-        // Split aces: обе руки сразу завершены
-        if (card1.label === 'A') {
+        // Split aces: если hitAfterAcesSplit выключен — обе руки сразу завершены
+        if (card1.label === 'A' && !state.settings.hitAfterAcesSplit) {
             state.playerStates[playerIndex].isOver = true;
             state.playerStates[playerIndex + 1].isOver = true;
         } else {
@@ -94,13 +94,13 @@ export const playersReducers = {
 
     playerWin: (state, action) => {
         const { playerIndex } = action.payload;
-        state.bankroll += state.playerStates[playerIndex].bet * 2;
+        state.bankroll = Math.floor(state.bankroll + state.playerStates[playerIndex].bet * 2);
         state.playerStates[playerIndex].result = 'win';
     },
 
     playerPush: (state, action) => {
         const { playerIndex } = action.payload;
-        state.bankroll += state.playerStates[playerIndex].bet;
+        state.bankroll = Math.floor(state.bankroll + state.playerStates[playerIndex].bet);
         state.playerStates[playerIndex].result = 'push';
     },
 

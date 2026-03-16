@@ -4,6 +4,7 @@
       "name": "blackjack-server",
       "script": "index.js",
       "args": "--https",
+      "kill_timeout": 5000,
       "env": {
         "PORT": 5007
       }
