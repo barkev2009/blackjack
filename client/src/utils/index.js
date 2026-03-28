@@ -290,7 +290,7 @@ export const simulateGame = (settings, biddingStrategy, numRounds, initialBankro
                 if (advice === GAME_DECISIONS.SPLIT && canSplit) {
                     splits++;
                     extra += hBet;
-                    pBets.push(hBet);
+                    pBets.splice(hi + 1, 0, hBet);
                     const [c1, c2] = hand;
                     hand.splice(0, 2, c1, draw());
                     pHands.splice(hi + 1, 0, [c2, draw()]);

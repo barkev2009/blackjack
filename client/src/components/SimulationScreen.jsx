@@ -172,7 +172,7 @@ const SimulationScreen = () => {
         const avg = finals.reduce((a, b) => a + b, 0) / finals.length;
         const median = finals[Math.floor(finals.length / 2)];
         const profitable = finals.filter(b => b > initialBankroll).length;
-        const ruined = runs.filter(run => run.some(pt => pt.bankroll < baseUnit)).length;
+        const ruined = runs.filter(run => run[run.length - 1].bankroll < baseUnit).length;
         const stddev = Math.sqrt(finals.map(b => (b - avg) ** 2).reduce((a, b) => a + b, 0) / finals.length);
         const pnl = avg - initialBankroll;
         const avgWagered = totalWagered / runs.length;
