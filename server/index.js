@@ -31,10 +31,15 @@ sequelize.authenticate()
     .then(() => {
         initBot(); // Запускаем Telegram бота
         if (process.env.NODE_ENV === 'production') {
+            const certPath = process.env.CERT_PATH;
+            if (!certPath) {
+                console.error('CERT_PATH не задан в .env — невозможно запустить HTTPS');
+                process.exit(1);
+            }
             const options = {
-                key:  fs.readFileSync(process.env.CERT_PATH + '/privkey.pem'),
-                cert: fs.readFileSync(process.env.CERT_PATH + '/cert.pem'),
-                ca:   fs.readFileSync(process.env.CERT_PATH + '/chain.pem'),
+                key:  fs.readFileSync(certPath + '/privkey.pem'),
+                cert: fs.readFileSync(certPath + '/cert.pem'),
+                ca:   fs.readFileSync(certPath + '/chain.pem'),
             };
             https.createServer(options, app).listen(PORT, () => {
                 console.log(`HTTPS server running on port ${PORT}`);
