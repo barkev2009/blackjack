@@ -28,7 +28,7 @@ const BettingPanel = ({ visible }) => {
     };
 
     const biddingAdviceAmount = biddingStrategy
-        ? getBiddingAdvice(biddingStrategy, bankroll, bet || baseUnit, lastResult, baseUnit, runningCount, trueCount)
+        ? getBiddingAdvice(biddingStrategy, bankroll, bet || baseUnit, lastResult, baseUnit, runningCount, trueCount, settings.tcSpread)
         : null;
 
     const resultLabel = lastResult ? (

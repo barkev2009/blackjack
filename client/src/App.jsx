@@ -12,6 +12,7 @@ import { gameSlice } from './game/game.slice';
 import { useGameSync } from './hooks/useGameSync';
 import { apiMe, apiLogout, apiResetGame } from './services/api';
 import CardPreloader from './components/CardPreloader';
+import ShuffleOverlay from './components/ShuffleOverlay';
 
 function App() {
     const dispatch = useDispatch();
@@ -73,6 +74,7 @@ function App() {
             {activeScreen === 'simulation' && <SimulationScreen />}
             {activeScreen === 'game'       && <GameTable />}
             {isAdmin && showShoeDev        && <DevShoePanel />}
+            <ShuffleOverlay />
 
             {isBankrupt && (
                 <div style={styles.overlay}>

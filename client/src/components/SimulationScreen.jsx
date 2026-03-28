@@ -29,6 +29,7 @@ const SimulationScreen = () => {
     const [numRounds, setNumRounds] = useState(1000);
     const [initialBankroll, setInitialBankroll] = useState(5000);
     const [baseUnit, setBaseUnit] = useState(25);
+    const [wongOutTC, setWongOutTC] = useState(null); // null = отключено
     const [selectedStrategies, setSelectedStrategies] = useState(['flat', 'card_count']);
     const [results, setResults] = useState(null);
     const [running, setRunning] = useState(false);
@@ -57,7 +58,8 @@ const SimulationScreen = () => {
 
             for (let i = 0; i < numSims; i++) {
                 const { results: run, tcStats, totalWagered } = simulateGame(
-                    settings, strat, numRounds, initialBankroll, baseUnit
+                    settings, strat, numRounds, initialBankroll, baseUnit,
+                    strat === 'card_count' ? wongOutTC : null
                 );
                 simRuns.push(run);
                 tcAgg.neg  += tcStats.neg;
@@ -193,6 +195,46 @@ const SimulationScreen = () => {
                 <ConfigInput label="Bankroll"    value={initialBankroll} onChange={setInitialBankroll} min={100} max={100000} step={100} />
                 <ConfigInput label="Base Unit"   value={baseUnit}        onChange={setBaseUnit}        min={5}   max={1000} step={5} />
             </div>
+
+            {/* Wong-out — только для Hi-Lo */}
+            {selectedStrategies.includes('card_count') && (
+                <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'rgba(160,96,224,0.08)', border: '1px solid rgba(160,96,224,0.25)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                        Hi-Lo: Wong Out (уйти со стола)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Уходить если TC &lt;</span>
+                        <input
+                            type="number" step="0.5"
+                            value={wongOutTC ?? ''}
+                            placeholder="выкл"
+                            onChange={e => {
+                                const v = e.target.value;
+                                setWongOutTC(v === '' ? null : Number(v));
+                            }}
+                            style={{
+                                width: '70px', padding: '5px 8px', borderRadius: '6px',
+                                background: 'rgba(0,0,0,0.4)', border: '1px solid var(--panel-border)',
+                                color: 'var(--text)', fontFamily: 'DM Sans, sans-serif',
+                                fontSize: '0.88rem', textAlign: 'center',
+                            }}
+                        />
+                        {wongOutTC !== null && (
+                            <button onClick={() => setWongOutTC(null)} style={{
+                                background: 'none', border: 'none', color: 'var(--text-dim)',
+                                fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline',
+                            }}>
+                                отключить
+                            </button>
+                        )}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                            {wongOutTC !== null
+                                ? `→ пересаживаемся на новый стол с полным башмаком`
+                                : '→ не используется'}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Strategy buttons — wrap */}
             <div style={{ marginBottom: '16px' }}>

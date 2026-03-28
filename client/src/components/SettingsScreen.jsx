@@ -77,10 +77,20 @@ const SettingsScreen = () => {
 
             {/* Bidding Strategy */}
             <Section title="Bidding Strategy">
-                <Row label={`Base Unit: $${baseUnit}`}>
-                    <input type="range" min="5" max="500" step="5" value={baseUnit}
-                        onChange={e => dispatch(gameSlice.actions.setBaseUnit(+e.target.value))}
-                        style={{ width: '160px' }} />
+                <Row label="Base Unit">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>$</span>
+                        <input
+                            type="number" min="1" max="10000" step="1" value={baseUnit}
+                            onChange={e => { const v = Math.max(1, +e.target.value); dispatch(gameSlice.actions.setBaseUnit(v)); }}
+                            style={{
+                                width: '80px', padding: '5px 8px', borderRadius: '6px',
+                                background: 'rgba(0,0,0,0.4)', border: '1px solid var(--panel-border)',
+                                color: 'var(--text)', fontFamily: 'DM Sans, sans-serif',
+                                fontSize: '0.88rem', textAlign: 'right',
+                            }}
+                        />
+                    </div>
                 </Row>
                 <Row label="Strategy">
                     <select
@@ -101,6 +111,9 @@ const SettingsScreen = () => {
                 <Row label="Show Bidding Advice on Betting Screen">
                     <Toggle checked={showBiddingAdvice} onChange={v => dispatch(gameSlice.actions.setShowBiddingAdvice(v))} />
                 </Row>
+                {biddingStrategy === 'card_count' && (
+                    <TcSpreadEditor spread={settings.tcSpread} onChange={v => update('tcSpread', v)} baseUnit={baseUnit} />
+                )}
             </Section>
             {/* Telegram 2FA */}
             <TelegramSection />
@@ -213,5 +226,103 @@ const Toggle = ({ checked, onChange }) => (
         <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: checked ? 'var(--gold-light)' : 'rgba(255,255,255,0.5)', transition: 'all 0.2s' }} />
     </button>
 );
+
+const TC_KEYS = ['-2', '-1', '0', '1', '2', '3', '4', '5'];
+const TC_LABELS = { '-2': 'TC ≤ −2', '-1': 'TC −1', '0': 'TC 0', '1': 'TC +1', '2': 'TC +2', '3': 'TC +3', '4': 'TC +4', '5': 'TC ≥ +5' };
+const DEFAULT_SPREAD = {
+    '-2': { mode: 'mult', value: 1 }, '-1': { mode: 'mult', value: 1 },
+    '0':  { mode: 'mult', value: 1 }, '1':  { mode: 'mult', value: 1 },
+    '2':  { mode: 'mult', value: 2 }, '3':  { mode: 'mult', value: 4 },
+    '4':  { mode: 'mult', value: 8 }, '5':  { mode: 'mult', value: 12 },
+};
+
+const TcSpreadEditor = ({ spread, onChange, baseUnit }) => {
+    // Нормализуем — поддерживаем старый формат (просто число)
+    const normalize = (raw) => {
+        const result = {};
+        TC_KEYS.forEach(k => {
+            const entry = raw?.[k];
+            if (!entry) { result[k] = { ...DEFAULT_SPREAD[k] }; return; }
+            result[k] = typeof entry === 'number'
+                ? { mode: 'mult', value: entry }
+                : { mode: entry.mode || 'mult', value: entry.value ?? 1 };
+        });
+        return result;
+    };
+
+    const current = normalize(spread);
+
+    const updateMode = (key, mode) => {
+        const entry = current[key];
+        // При переключении в fixed — конвертируем mult*baseUnit в фикс сумму
+        const newValue = mode === 'fixed'
+            ? (entry.mode === 'mult' ? entry.value * baseUnit : entry.value)
+            : (entry.mode === 'fixed' ? Math.max(1, Math.round(entry.value / baseUnit)) : entry.value);
+        onChange({ ...current, [key]: { mode, value: newValue } });
+    };
+
+    const updateValue = (key, val) => {
+        const n = Math.max(1, Math.round(Number(val)));
+        if (isNaN(n)) return;
+        onChange({ ...current, [key]: { ...current[key], value: n } });
+    };
+
+    return (
+        <div style={{ marginTop: '4px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '12px 14px' }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+                Bet Spread by True Count
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                {TC_KEYS.map(key => {
+                    const { mode, value } = current[key];
+                    const betAmt = mode === 'fixed' ? value : baseUnit * value;
+                    const isHigh = betAmt >= baseUnit * 8;
+                    const amtColor = betAmt === baseUnit ? 'var(--text-dim)' : isHigh ? 'var(--win)' : 'var(--gold)';
+
+                    return (
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {/* TC label */}
+                            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', width: '58px', flexShrink: 0 }}>
+                                {TC_LABELS[key]}
+                            </span>
+
+                            {/* Mode toggle: ×mult | $fixed */}
+                            <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid var(--panel-border)', flexShrink: 0 }}>
+                                {['mult', 'fixed'].map(m => (
+                                    <button key={m} onClick={() => updateMode(key, m)} style={{
+                                        padding: '3px 7px', fontSize: '0.72rem', cursor: 'pointer', border: 'none',
+                                        background: mode === m ? 'rgba(201,168,76,0.25)' : 'rgba(0,0,0,0.3)',
+                                        color: mode === m ? 'var(--gold)' : 'var(--text-dim)',
+                                        fontFamily: 'DM Sans, sans-serif',
+                                    }}>
+                                        {m === 'mult' ? '×' : '$'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Value input */}
+                            <input
+                                type="number" min="1"
+                                value={value}
+                                onChange={e => updateValue(key, e.target.value)}
+                                style={{
+                                    width: '56px', padding: '4px 6px', borderRadius: '5px',
+                                    background: 'rgba(0,0,0,0.35)', border: '1px solid var(--panel-border)',
+                                    color: 'var(--text)', fontFamily: 'DM Sans, sans-serif',
+                                    fontSize: '0.85rem', textAlign: 'center', flexShrink: 0,
+                                }}
+                            />
+
+                            {/* Result */}
+                            <span style={{ fontSize: '0.75rem', color: amtColor }}>
+                                = ${betAmt.toLocaleString()}
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 export default SettingsScreen;

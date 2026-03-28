@@ -48,6 +48,17 @@ export const DEFAULT_SETTINGS = {
     dealerHitsSoft17: true,
     autoShuffle: false,
     maxSplits: 3,
+    // Ставки по True Count: mode='mult' (множитель от baseUnit) или mode='fixed' (фикс сумма)
+    tcSpread: {
+        '-2': { mode: 'mult', value: 1 },
+        '-1': { mode: 'mult', value: 1 },
+        '0':  { mode: 'mult', value: 1 },
+        '1':  { mode: 'mult', value: 1 },
+        '2':  { mode: 'mult', value: 2 },
+        '3':  { mode: 'mult', value: 4 },
+        '4':  { mode: 'mult', value: 8 },
+        '5':  { mode: 'mult', value: 12 },
+    },
 }
 
 export const BLACKJACK_PAYOUTS = [

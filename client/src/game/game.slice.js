@@ -50,6 +50,7 @@ const initialState = {
     showTrueCount: true,
     // Dev shoe panel
     showShoeDev: false,
+    isShuffling: false,
 };
 
 export const gameSlice = createSlice({
@@ -88,14 +89,8 @@ export const gameSlice = createSlice({
 
         setPhase: (state, action) => {
             state.phase = action.payload;
-            // При переходе в BETTING: reshuffle если прошли cut card, затем очищаем стол
+            // При переходе в BETTING: только очищаем стол (решаффл теперь через reshuffleShoe)
             if (action.payload === GAME_STATES.BETTING) {
-                const cutCard = Math.floor(state.settings.numDecks * 52 * state.settings.penetration);
-                const reshuffleThreshold = state.settings.numDecks * 52 - cutCard;
-                if (state.shoe.length < reshuffleThreshold) {
-                    state.shoe = createShoe(state.settings.numDecks);
-                    state.runningCount = 0;
-                }
                 state.dealerState.hand = [];
                 state.dealerState.score = [0, 0];
                 state.dealerState.scoreFormatted = '';
@@ -111,6 +106,21 @@ export const gameSlice = createSlice({
                     isBusted: false,
                 }));
             }
+        },
+
+        setIsShuffling: (state, action) => {
+            state.isShuffling = action.payload;
+        },
+
+        reshuffleShoe: (state) => {
+            state.shoe = createShoe(state.settings.numDecks);
+            state.runningCount = 0;
+        },
+
+        needsReshuffle: (state) => {
+            const cutCard = Math.floor(state.settings.numDecks * 52 * state.settings.penetration);
+            const reshuffleThreshold = state.settings.numDecks * 52 - cutCard;
+            return state.shoe.length < reshuffleThreshold;
         },
 
         updateSettings: (state, action) => {
@@ -171,16 +181,14 @@ export const gameSlice = createSlice({
         loadServerState: (state, action) => {
             const { bankroll, state: saved } = action.payload;
             if (!saved || Object.keys(saved).length === 0) {
-                // Первый запуск — только банкролл
                 state.bankroll = bankroll;
                 return;
             }
-            // Восстанавливаем все сохранённые поля
             return {
                 ...initialState,
                 ...saved,
                 bankroll,
-                // Display toggles сохраняем из saved, остальное из initialState по умолчанию
+                isShuffling: false, // никогда не восстанавливаем — анимация не переживает перезагрузку
             };
         },
 

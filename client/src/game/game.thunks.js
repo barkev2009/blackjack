@@ -4,6 +4,26 @@ import { GAME_STATES } from '../const';
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+const checkAndReshuffle = async (dispatch, getState) => {
+    const state = getState().game;
+    const cutCard = Math.floor(state.settings.numDecks * 52 * state.settings.penetration);
+    const reshuffleThreshold = state.settings.numDecks * 52 - cutCard;
+    if (state.shoe.length < reshuffleThreshold) {
+        dispatch(gameSlice.actions.reshuffleShoe());   // сразу обновляем колоду
+        dispatch(gameSlice.actions.setIsShuffling(true));
+        await delay(10000);                             // ждём анимацию
+        dispatch(gameSlice.actions.setIsShuffling(false));
+    }
+};
+
+const transitionToBetting = async (dispatch, getState) => {
+    dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
+    await delay(420);
+    dispatch({ type: 'game/clearTable' });
+    await checkAndReshuffle(dispatch, getState);
+    dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
+};
+
 export const dealerTurnAsync = createAsyncThunk(
     'game/dealerTurnAsync',
     async (_, { dispatch, getState }) => {
@@ -11,7 +31,6 @@ export const dealerTurnAsync = createAsyncThunk(
             // Сначала проверяем буст — до раскрытия карты дилера
             const state0 = getState().game;
             if (state0.playerStates.every(ps => ps.isBusted)) {
-                // Показываем тост bust, и только потом раскрываем карту дилера
                 dispatch(gameSlice.actions.finishDealerTurn());
                 dispatch(gameSlice.actions.setLastResult('loss'));
                 await delay(500);
@@ -19,10 +38,7 @@ export const dealerTurnAsync = createAsyncThunk(
                 await delay(600);
                 dispatch(gameSlice.actions.revealDealerCardAction());
                 await delay(1200);
-                dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
-                await delay(420);
-                dispatch({ type: 'game/clearTable' });
-                dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
+                await transitionToBetting(dispatch, getState);
                 return;
             }
 
@@ -75,7 +91,6 @@ export const dealerTurnAsync = createAsyncThunk(
                 }
             });
 
-            // lastResult: bust считается как loss для бейджа
             const lastRes = finalState.playerStates.every(ps => ps.isBusted) ? 'loss'
                 : finalState.playerStates.every(ps => ps.result === 'bust' || ps.result === 'loss') ? 'loss'
                 : overallResult;
@@ -83,10 +98,7 @@ export const dealerTurnAsync = createAsyncThunk(
 
             dispatch(gameSlice.actions.setPhase(GAME_STATES.GAME_OVER));
             await delay(1800);
-            dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
-            await delay(420);
-            dispatch({ type: 'game/clearTable' });
-            dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
+            await transitionToBetting(dispatch, getState);
 
             return { success: true };
         } catch (error) {
@@ -98,11 +110,8 @@ export const dealerTurnAsync = createAsyncThunk(
 
 export const resolveBlackjackAsync = createAsyncThunk(
     'game/resolveBlackjackAsync',
-    async (_, { dispatch }) => {
+    async (_, { dispatch, getState }) => {
         await delay(1800);
-        dispatch(gameSlice.actions.setPhase(GAME_STATES.CLEARING));
-        await delay(420);
-        dispatch({ type: 'game/clearTable' });
-        dispatch(gameSlice.actions.setPhase(GAME_STATES.BETTING));
+        await transitionToBetting(dispatch, getState);
     }
 );

@@ -95,17 +95,25 @@ export const computeHandScores = (hand) => {
     return [total, soft];
 }
 
-export const giveBSAdvice = (dealerLabel, hand, scores, das) => {
+export const giveBSAdvice = (dealerLabel, hand, scores, das, canDouble = true) => {
     const [hard, soft] = scores;
     const isSoft = hard !== soft && soft <= 21;
     const isPair = hand.length === 2 && hand[0].label === hand[1].label;
-    if (isPair)  return splitBS(das, dealerLabel, hand[0].label, soft);
-    if (isSoft)  return softBS(dealerLabel, soft - 11);
-    return hardBS(dealerLabel, hard);
+    let advice;
+    if (isPair)  advice = splitBS(das, dealerLabel, hand[0].label, soft);
+    else if (isSoft)  advice = softBS(dealerLabel, soft - 11);
+    else advice = hardBS(dealerLabel, hard);
+
+    // Если дабл недоступен — заменяем на fallback
+    if (!canDouble) {
+        if (advice === GAME_DECISIONS.DOUBLE_DOWN)   return GAME_DECISIONS.HIT;
+        if (advice === GAME_DECISIONS.DOUBLE_DOWN_S) return GAME_DECISIONS.STAND;
+    }
+    return advice;
 }
 
 // ============ BIDDING ============
-export const getBiddingAdvice = (strategy, bankroll, lastBet, lastResult, baseUnit, runningCount, trueCount) => {
+export const getBiddingAdvice = (strategy, bankroll, lastBet, lastResult, baseUnit, runningCount, trueCount, tcSpread) => {
     switch (strategy) {
         case 'flat':       return baseUnit;
         case 'martingale': return lastResult === 'loss' ? Math.min(lastBet * 2, bankroll) : baseUnit;
@@ -115,12 +123,24 @@ export const getBiddingAdvice = (strategy, bankroll, lastBet, lastResult, baseUn
             if (lastResult === 'win' && lastBet > baseUnit) return lastBet - baseUnit;
             return baseUnit;
         case 'fibonacci':  return baseUnit;
-        case 'card_count':
-            if (trueCount <= 1) return baseUnit;
-            if (trueCount <= 2) return baseUnit * 2;
-            if (trueCount <= 3) return baseUnit * 4;
-            if (trueCount <= 4) return baseUnit * 8;
-            return Math.min(baseUnit * 12, bankroll * 0.25);
+        case 'card_count': {
+            const defaultSpread = {
+                '-2': { mode: 'mult', value: 1 }, '-1': { mode: 'mult', value: 1 },
+                '0':  { mode: 'mult', value: 1 }, '1':  { mode: 'mult', value: 1 },
+                '2':  { mode: 'mult', value: 2 }, '3':  { mode: 'mult', value: 4 },
+                '4':  { mode: 'mult', value: 8 }, '5':  { mode: 'mult', value: 12 },
+            };
+            const spread = tcSpread || defaultSpread;
+            const tc = Math.floor(trueCount);
+            const key = tc <= -2 ? '-2' : tc === -1 ? '-1' : tc === 0 ? '0'
+                : tc === 1 ? '1' : tc === 2 ? '2' : tc === 3 ? '3' : tc === 4 ? '4' : '5';
+            const entry = spread[key] || { mode: 'mult', value: 1 };
+            // Поддержка старого формата (просто число) для обратной совместимости
+            if (typeof entry === 'number') return baseUnit * entry;
+            return entry.mode === 'fixed'
+                ? Math.max(baseUnit, entry.value)
+                : baseUnit * (entry.value || 1);
+        }
         default: return baseUnit;
     }
 }
@@ -139,8 +159,8 @@ export const BIDDING_STRATEGY_DESCRIPTIONS = {
 }
 
 // ============ SIMULATION ============
-export const simulateGame = (settings, biddingStrategy, numRounds, initialBankroll, baseUnit) => {
-    const { numDecks, penetration, blackjackPayout, doubleAfterSplit, dealerHitsSoft17, maxSplits, autoShuffle } = settings;
+export const simulateGame = (settings, biddingStrategy, numRounds, initialBankroll, baseUnit, wongOutTC = null) => {
+    const { numDecks, penetration, blackjackPayout, doubleAfterSplit, dealerHitsSoft17, maxSplits, autoShuffle, tcSpread } = settings;
     const results = [];
     let bankroll  = initialBankroll;
     let shoe      = createShoe(numDecks);
@@ -173,7 +193,7 @@ export const simulateGame = (settings, biddingStrategy, numRounds, initialBankro
         if (tc < 0) tcStats.neg++; else if (tc < 1) tcStats.zero++; else if (tc <= 3) tcStats.low++; else tcStats.high++;
         let b = biddingStrategy === 'fibonacci'
             ? baseUnit * (fibSeq[Math.min(fibIdx, fibSeq.length-1)] || 1)
-            : getBiddingAdvice(biddingStrategy, bankroll, lastBet, lastResult, baseUnit, rc, tc);
+            : getBiddingAdvice(biddingStrategy, bankroll, lastBet, lastResult, baseUnit, rc, tc, tcSpread);
         return Math.max(baseUnit, Math.min(b, bankroll));
     };
 
@@ -192,6 +212,17 @@ export const simulateGame = (settings, biddingStrategy, numRounds, initialBankro
             lastBet = baseUnit;
         }
         if (bankroll < baseUnit) break;
+
+        // Wong out: если TC опустился ниже порога — уходим на новый стол
+        if (wongOutTC !== null && biddingStrategy === 'card_count') {
+            const currentTC = shoe.length > 0 ? rc / (shoe.length / 52) : 0;
+            if (currentTC < wongOutTC) {
+                shoe = createShoe(numDecks);
+                rc = 0;
+                lastBet = baseUnit;
+                lastResult = null;
+            }
+        }
 
         const bet = nextBet();
 

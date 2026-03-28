@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameSlice } from '../game/game.slice';
 import { GAME_STATES } from '../const';
@@ -10,6 +10,7 @@ const ActionPanel = () => {
     const { phase, settings, dealerState, playerStates, showCardValues } = useSelector(s => s.game);
     const [showBS, setShowBS] = useState(false);
     const [acting, setActing] = useState(false);
+    const [frozenAdvice, setFrozenAdvice] = useState(null);
 
     // Найдём активную руку
     const activeIndex = playerStates.findIndex(ps => !ps.isOver && !ps.isWaiting);
@@ -17,28 +18,37 @@ const ActionPanel = () => {
 
     const allBusted = playerStates.length > 0 && playerStates.every(ps => ps.isBusted);
 
-    // Сбрасываем acting при любом изменении состояния рук —
-    // это ловит хит (hand.length), смену активной руки (activeIndex),
-    // и сплит тузов где activeIndex сразу уходит в -1
+    // Сбрасываем acting при любом изменении состояния рук
     const playerStatesKey = playerStates.map(ps => `${ps.isOver}-${ps.isWaiting}-${ps.hand.length}`).join('|');
-    React.useEffect(() => {
+    useEffect(() => {
         setActing(false);
     }, [playerStatesKey]);
+
+    const buttonsDisabled = acting || (allBusted && phase === GAME_STATES.GAME_OVER);
+
+    const dealerUpLabel = dealerState.hand[0]?.label;
+    const canDouble = !buttonsDisabled && activePlayer?.hand.length === 2;
+    const bsAdvice = (!buttonsDisabled && dealerUpLabel && activePlayer?.hand.length >= 2)
+        ? giveBSAdvice(dealerUpLabel, activePlayer.hand, activePlayer.score, settings.doubleAfterSplit, canDouble)
+        : null;
+
+    // Замораживаем последнее значение подсказки при нажатии кнопки,
+    // чтобы исчезновение подсказки не выдавало баст раньше тоста
+    useEffect(() => {
+        if (bsAdvice) setFrozenAdvice(bsAdvice);
+    }, [bsAdvice]);
+    useEffect(() => {
+        if (phase === GAME_STATES.BETTING) setFrozenAdvice(null);
+    }, [phase]);
 
     const isVisible = (phase === GAME_STATES.INITIAL_GAME && (activePlayer || allBusted))
         || (allBusted && phase === GAME_STATES.GAME_OVER);
     if (!isVisible) return null;
 
-    const buttonsDisabled = acting || (allBusted && phase === GAME_STATES.GAME_OVER);
+    const displayedAdvice = frozenAdvice;
 
-    const canDouble = !buttonsDisabled && activePlayer?.hand.length === 2;
     const canSplit = !buttonsDisabled && activePlayer?.hand.length === 2 &&
         activePlayer.hand[0]?.label === activePlayer.hand[1]?.label;
-
-    const dealerUpLabel = dealerState.hand[0]?.label;
-    const bsAdvice = (!buttonsDisabled && dealerUpLabel && activePlayer?.hand.length >= 2)
-        ? giveBSAdvice(dealerUpLabel, activePlayer.hand, activePlayer.score, settings.doubleAfterSplit)
-        : null;
 
     const handleStand  = () => { setActing(true); dispatch(gameSlice.actions.stand({ playerIndex: activeIndex })); };
     const handleHit    = () => { setActing(true); dispatch(gameSlice.actions.hit({ playerIndex: activeIndex })); };
@@ -48,8 +58,8 @@ const ActionPanel = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             {/* BS advice */}
-            <div className={`bs-inline ${showBS && bsAdvice ? '' : 'hidden'}`}>
-                {showBS && bsAdvice ? `→ ${bsAdvice}` : '-'}
+            <div className={`bs-inline ${showBS && displayedAdvice ? '' : 'hidden'}`}>
+                {showBS && displayedAdvice ? `→ ${displayedAdvice}` : '-'}
             </div>
 
             <div className="blackjack-buttons">
