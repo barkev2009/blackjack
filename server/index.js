@@ -11,9 +11,14 @@ const { initBot } = require('./services/telegram');
 const authRoutes = require('./routes/auth');
 const gameRoutes = require('./routes/game');
 
+const helmet = require('helmet');
+
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(helmet({
+    strictTransportSecurity: process.env.NODE_ENV === 'production' ? { maxAge: 31536000 } : false,
+}));
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 

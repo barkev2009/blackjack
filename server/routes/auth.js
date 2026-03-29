@@ -7,7 +7,8 @@ const { generateCode, sendOtp }         = require('../services/email');
 const { generateLinkCode, send2FACode } = require('../services/telegram');
 const { setTokenCookie, clearTokenCookie, authMiddleware } = require('../middleware/auth');
 
-const otpLimiter = rateLimit({ windowMs: 60_000, max: 5, message: { error: 'Too many requests' } });
+const otpLimiter    = rateLimit({ windowMs: 60_000, max: 5,  message: { error: 'Too many requests' } });
+const verifyLimiter = rateLimit({ windowMs: 60_000, max: 10, message: { error: 'Too many requests' } });
 
 // ─── REGISTER ─────────────────────────────────────────────────────────────────
 router.post('/register', otpLimiter, async (req, res) => {
@@ -40,7 +41,7 @@ router.post('/register', otpLimiter, async (req, res) => {
 });
 
 // ─── VERIFY EMAIL ─────────────────────────────────────────────────────────────
-router.post('/verify-email', async (req, res) => {
+router.post('/verify-email', verifyLimiter, async (req, res) => {
     try {
         const { userId, code } = req.body;
         const otp = await OtpCode.findOne({ where: { userId, code, purpose: 'verify_email', used: false } });
@@ -96,7 +97,7 @@ router.post('/login', otpLimiter, async (req, res) => {
 });
 
 // ─── LOGIN step 2 (2FA) ───────────────────────────────────────────────────────
-router.post('/login-2fa', async (req, res) => {
+router.post('/login-2fa', verifyLimiter, async (req, res) => {
     try {
         const { userId, code } = req.body;
         const otp = await OtpCode.findOne({ where: { userId, code, purpose: 'login_2fa', used: false } });
@@ -118,6 +119,10 @@ router.post('/login-2fa', async (req, res) => {
 router.post('/resend-otp', otpLimiter, async (req, res) => {
     try {
         const { userId, purpose } = req.body;
+        const VALID_PURPOSES = ['verify_email', 'login_2fa', 'reset_password'];
+        if (!VALID_PURPOSES.includes(purpose))
+            return res.status(400).json({ error: 'Invalid purpose' });
+
         const user = await User.findByPk(userId);
         if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
 
@@ -184,14 +189,16 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
         if (!email) return res.status(400).json({ error: 'Введите почту' });
 
         const user = await User.findOne({ where: { email } });
-        if (!user) return res.status(404).json({ error: 'Указанной почты не было найдено.' });
+        if (user) {
+            await OtpCode.update({ used: true }, { where: { userId: user.id, purpose: 'reset_password', used: false } });
+            const code = generateCode();
+            await OtpCode.create({ userId: user.id, code, purpose: 'reset_password', expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
+            await sendOtp(email, code, 'reset_password');
+        }
 
-        await OtpCode.update({ used: true }, { where: { userId: user.id, purpose: 'reset_password', used: false } });
-        const code = generateCode();
-        await OtpCode.create({ userId: user.id, code, purpose: 'reset_password', expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
-        await sendOtp(email, code, 'reset_password');
-
-        res.json({ message: 'Код для сброса пароля отправлен на почту', userId: user.id });
+        // Всегда 200 с одним и тем же сообщением — не раскрываем существование email.
+        // userId возвращается только если пользователь найден, иначе null.
+        res.json({ message: 'Если указанная почта зарегистрирована, на неё отправлен код', userId: user?.id ?? null });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Ошибка сервера' });

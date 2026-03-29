@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION';
+if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET не задан в .env — сервер не может быть запущен безопасно');
+    process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const COOKIE_NAME = 'bj_token';
 
